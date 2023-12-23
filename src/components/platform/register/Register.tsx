@@ -17,6 +17,7 @@ import {CaptchaComponent} from "../../../general-components/Captcha/CaptchaCompo
 interface RegisterState {
     isRegistering: boolean
     loaded?: boolean
+    captchaKey: string
 }
 
 class Register extends PureComponent<RouteComponentProps, RegisterState> {
@@ -25,8 +26,14 @@ class Register extends PureComponent<RouteComponentProps, RegisterState> {
         super(props);
 
         this.state = {
-            isRegistering: false
+            isRegistering: false,
+            captchaKey: this.getNewCaptchaKey()
         };
+    }
+
+
+    private getNewCaptchaKey = () => {
+        return new Date().toTimeString()
     }
 
     register = async (e: FormEvent<HTMLFormElement>) => {
@@ -45,7 +52,8 @@ class Register extends PureComponent<RouteComponentProps, RegisterState> {
         let call = await Session.register(email, username, password, captchaKey, captcha);
 
         this.setState({
-            isRegistering: false
+            isRegistering: false,
+            captchaKey: this.getNewCaptchaKey()
         });
 
         if (call?.success) {
@@ -98,7 +106,7 @@ class Register extends PureComponent<RouteComponentProps, RegisterState> {
                 {/*PASSWORD*/}
                 <PasswordField required confirm check={true} eye={true}/>
 
-                <CaptchaComponent/>
+                <CaptchaComponent key={this.state.captchaKey}/>
 
                 <hr/>
 
