@@ -1,17 +1,17 @@
 import {Button, FormSelect, Modal} from "react-bootstrap";
 import {faFileExport} from "@fortawesome/free-solid-svg-icons";
 import {memo} from "react";
-import {Tool} from "./Tool";
 import {Exporter} from "../Export/Exporter";
 import FAE from "../Icons/FAE";
 import {ModalCloseable} from "../Modal/ModalCloseable";
+import {ToolData} from "./Data/ToolData";
 
 
 interface ExportModalProps {
     onClose: () => void
     onSelect: (exporter: Exporter<any>) => void
     show: boolean
-    tool: Tool<any>
+    tool: ToolData<any>
 }
 
 function ExportModalComponent(props: ExportModalProps) {

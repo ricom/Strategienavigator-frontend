@@ -1,5 +1,4 @@
 import {faSortAmountDownAlt} from "@fortawesome/free-solid-svg-icons";
-import {SteppableTool} from "../../../general-components/Tool/SteppableTool/SteppableTool";
 import {RouteComponentProps} from "react-router";
 import {JSONExporter} from "../../../general-components/Export/JSONExporter";
 import "./pairwise-comparison.scss";
@@ -13,6 +12,7 @@ import {PCResultValues} from "./steps/PCResult/PCResultComponent";
 
 import {PCExcelExporter} from "./export/PCExcelExporter";
 import {PCJSONImporter} from "./import/PCJSONImporter";
+import {SteppableToolData} from "../../../general-components/Tool/Data/SteppableToolData";
 
 
 /**
@@ -24,7 +24,7 @@ export interface PairwiseComparisonValues {
     "pc-result"?: PCResultValues
 }
 
-class PairwiseComparison extends SteppableTool<PairwiseComparisonValues> {
+class PairwiseComparison extends SteppableToolData<PairwiseComparisonValues> {
 
 
     constructor(props: RouteComponentProps, context: any) {

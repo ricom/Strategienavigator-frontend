@@ -15,12 +15,12 @@ import {UIError} from "../../../Error/UIErrors/UIError";
 import {Exporter, ValidationError} from "../../../Export/Exporter";
 import {Draft} from "immer";
 import {IUIErrorContext} from "../../../Contexts/UIErrorContext/UIErrorContext";
-import {SteppableTool} from "../SteppableTool";
 import {SharedSaveContext,} from "../../../Contexts/SharedSaveContextComponent";
 import {EditSavesPermission, hasPermission} from "../../../Permissions";
 import {SharedSavePermission} from "../../../Datastructures";
 import {DesktopContext} from "../../../Contexts/DesktopContext";
 import {types} from "sass";
+import {SteppableToolData} from "../../Data/SteppableToolData";
 import Error = types.Error;
 
 
@@ -96,7 +96,7 @@ export interface StepDataHandler<T extends object> {
 
 export interface StepComponentProps<D extends object> extends ToolSaveProps<D> {
     steps: StepDefinition<D>[]
-    tool: SteppableTool<D>
+    tool: SteppableToolData<D>
 }
 
 export interface StepController {
