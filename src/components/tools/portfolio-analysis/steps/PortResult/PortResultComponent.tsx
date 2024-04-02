@@ -15,6 +15,7 @@ import React from "react";
 import {SettingsContext} from "../../../../../general-components/Contexts/SettingsContextComponent";
 import {QuadrantGrid} from "../../../../../general-components/CoordinateSystem/Grid/QuadrantGrid";
 import {
+    PortfolioQuadrantsSettingType,
     PortfolioQuadrantsSettingValues
 } from "../../../../../general-components/Settings/Types/PortfolioQuadrantsType/PortfolioQuadrantsSettingType";
 import {CustomGrid} from "../../../../../general-components/CoordinateSystem/Grid/CustomGrid";
@@ -47,7 +48,13 @@ class PortResultComponent extends Step<PortfolioAnalysisValues, {}> {
 
     build(): JSX.Element {
         if (this.props.save.data["port-result"] !== undefined) {
-            let gridSetting = JSON.parse(this.context.settings.getSetting(2).value) as PortfolioQuadrantsSettingValues;
+            const setting = this.context.settings.getSetting(2);
+            let gridSetting;
+            if (setting) {
+                gridSetting = JSON.parse(setting.value) as PortfolioQuadrantsSettingValues;
+            } else {
+                gridSetting = PortfolioQuadrantsSettingType.defaults;
+            }
             let grid: boolean | CustomGrid = true;
             if (gridSetting && gridSetting.toggled) {
                 grid = new QuadrantGrid(gridSetting.quadrants.map((v) => v.value));

@@ -126,7 +126,7 @@ export class Settings extends Component<{}, SettingsState> {
 
         return (
             <>
-                <Loader payload={[]} loaded={!this.context.isLoading} transparent={true}>
+                <Loader loaded={!this.context.isLoading} transparent={true}>
 
                     <div className={"settings"}>
                         {settings.map((item, i) => {
@@ -170,7 +170,7 @@ export class Settings extends Component<{}, SettingsState> {
         const context = this.context;
         let settingsList = context.settings;
         for (let s of this.state.settings) {
-            let setting = settingsList.getSetting(s.setting_id);
+            let setting = settingsList.getSetting(s.setting_id)!!;
             if (!Object.is(setting.value, s.newValue)) {
                 let f = SettingsAPI.createUserSettings;
                 if (setting.exists)

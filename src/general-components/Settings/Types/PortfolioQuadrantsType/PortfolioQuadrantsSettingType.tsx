@@ -18,28 +18,30 @@ export interface PortfolioQuadrantsSettingValues {
 
 export class PortfolioQuadrantsSettingType extends Component<PortfolioQuadrantsSettingTypeProps, {}> {
 
+    static defaults: PortfolioQuadrantsSettingValues = {
+        toggled: false,
+        quadrants: [
+            {
+                value: "Oben Links",
+                header: "Oben Links"
+            },
+            {
+                value: "Oben Rechts",
+                header: "Oben Rechts"
+            },
+            {
+                value: "Unten Links",
+                header: "Unten Links"
+            },
+            {
+                value: "Unten Rechts",
+                header: "Unten Rechts"
+            }
+        ]
+    };
+
     getDefaults(): PortfolioQuadrantsSettingValues {
-        return {
-            toggled: false,
-            quadrants: [
-                {
-                    value: "Oben Links",
-                    header: "Oben Links"
-                },
-                {
-                    value: "Oben Rechts",
-                    header: "Oben Rechts"
-                },
-                {
-                    value: "Unten Links",
-                    header: "Unten Links"
-                },
-                {
-                    value: "Unten Rechts",
-                    header: "Unten Rechts"
-                }
-            ]
-        };
+        return PortfolioQuadrantsSettingType.defaults;
     }
 
     getValue(): PortfolioQuadrantsSettingValues {

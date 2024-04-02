@@ -1,8 +1,7 @@
 import {SettingsList} from "../Settings/SettingsList";
-import {Component, createContext} from "react";
-import {User} from "../User";
-import {Session} from "../Session/Session";
+import {createContext, ReactElement, ReactNode, useCallback, useEffect, useMemo, useState} from "react";
 import {SettingsCache} from "../API/SettingsCache";
+import {useUserContext} from "./UserContextComponent";
 
 
 export interface ISettingsContext {
@@ -20,10 +19,6 @@ export interface ISettingsContext {
     isLoading: boolean
 }
 
-export interface SettingsContextState {
-    settingsContext: ISettingsContext
-}
-
 export const SettingsContext = createContext<ISettingsContext>({
     causeUpdate: () => {
     },
@@ -34,114 +29,85 @@ export const SettingsContext = createContext<ISettingsContext>({
 export type SettingsChanger = (oldSettings: SettingsList, newSettings: SettingsList) => void;
 
 
-export class SettingsContextComponent extends Component<any, SettingsContextState> {
-    private static settingsChanger: SettingsChanger[] = [];
-    private settingsCache?: SettingsCache;
+export function _SettingsContextComponent({children}: { children: ReactNode }) {
+    // state
+    const [isLoading, setLoading] = useState(false);
+    const [settings, setSettings] = useState(new SettingsList());
+    // context
+    const {user} = useUserContext();
 
-    constructor(props: any) {
-        super(props);
-
-        this.state = {
-            settingsContext: {
-                causeUpdate: () => {
-                },
-                settings: new SettingsList(),
-                isLoading: false
-            }
+    let settingsCache: SettingsCache | undefined = useMemo(() => {
+        if (user == null) {
+            return undefined;
         }
-    }
-
-    public static addSettingsChangeListener(listener: SettingsChanger) {
-        if (!SettingsContextComponent.settingsChanger.some((find) => find === listener)) {
-            SettingsContextComponent.settingsChanger.push(listener);
-        }
-    }
-
-    public static removeSettingsChangeListener(listener: SettingsChanger) {
-        let index = SettingsContextComponent.settingsChanger.indexOf(listener);
-        if (index >= 0) {
-            SettingsContextComponent.settingsChanger.slice(index, 1);
-        }
-    }
-
-    render() {
-        return (
-            <SettingsContext.Provider value={this.state.settingsContext}>
-                {this.props.children}
-            </SettingsContext.Provider>
-        );
-    }
-
-    /**
-     * Listener der aufgerufen wird, wenn sich der aktuell angemeldete Nutzer �ndert
-     * @param user Der aktuelle Nutzer, null wenn kein Nutzer angemeldet ist
-     */
-    userChanged = async (user: User | null) => {
-        if (Session.isLoggedIn()) {
-            this.settingsCache = new SettingsCache(user?.getID() as number);
-            await this.updateSettings();
-        } else {
-            delete this.settingsCache;
-            this.setState({
-                settingsContext: {
-                    settings: new SettingsList(),
-                    causeUpdate: this.updateSettings,
-                    isLoading: false
-                }
-            });
-        }
-    }
-
-    /**
-     * registriert den UserChanged Listener
-     */
-    componentDidMount() {
-        Session.addUserChangedCallback(this.userChanged);
-    }
-
-    /**
-     * Entfernt den UserChanged Listener
-     */
-    componentWillUnmount() {
-        Session.removeUserChangedCallback(this.userChanged);
-    }
-
+        return new SettingsCache(user.getID());
+    }, [user]);
     /**
      * Lädt alle Einstellungen aus dem Backend neu, Ändert die State variable zu den neuen Werten
      */
-    updateSettings = async () => {
-        if (this.settingsCache) {
-            this.setLoading(true);
+    const updateSettings = useCallback(
+        async () => {
+            if (settingsCache) {
+                setLoading(true)
 
-            await this.settingsCache.updateUserData();
+                await settingsCache.updateUserData();
 
-            for (const f of SettingsContextComponent.settingsChanger) {
-                f(this.state.settingsContext.settings, this.settingsCache.userSettings);
-            }
-
-            this.setState({
-                settingsContext: {
-                    causeUpdate: this.updateSettings,
-                    settings: this.settingsCache.userSettings,
-                    isLoading: false
+                for (const f of _SettingsContextComponent.settingsChanger) {
+                    f(settingsCache.userSettings, settingsCache.userSettings);
                 }
-            });
-        }
-    }
 
-    /**
-     * Ändert den State
-     * @param isLoading ob das die Einstellungen gerade aus dem Backend abgerufen werden
-     * @private
-     */
-    private setLoading(isLoading: boolean) {
-        this.setState({
-            settingsContext: {
-                settings: this.state.settingsContext.settings,
-                causeUpdate: this.updateSettings,
-                isLoading: isLoading
+                setLoading(false);
+                setSettings(settingsCache.userSettings);
             }
-        });
-    }
+        }, [setLoading, setSettings, settingsCache]);
 
+    useEffect(() => {
+        updateSettings();
+    }, [updateSettings]);
+
+
+    const settingsContext = useMemo((): ISettingsContext => {
+        return {
+            settings: settings,
+            causeUpdate: updateSettings,
+            isLoading: isLoading
+        }
+    }, [settings, updateSettings, isLoading]);
+
+
+    return (
+        <SettingsContext.Provider value={settingsContext}>
+            {children}
+        </SettingsContext.Provider>
+    );
 }
+
+
+/**
+ * Listener
+ */
+_SettingsContextComponent.settingsChanger = [] as SettingsChanger[];
+
+_SettingsContextComponent.addSettingsChangeListener = function (listener: SettingsChanger) {
+    if (!_SettingsContextComponent.settingsChanger.some((find) => find === listener)) {
+        _SettingsContextComponent.settingsChanger.push(listener);
+    }
+}
+
+_SettingsContextComponent.removeSettingsChangeListener = function (listener: SettingsChanger) {
+    let index = _SettingsContextComponent.settingsChanger.indexOf(listener);
+    if (index >= 0) {
+        _SettingsContextComponent.settingsChanger.slice(index, 1);
+    }
+}
+
+// Is here to check fo usages more easily. (Find usages doesn't work on the above functions somehow).
+const SettingsContextComponent = _SettingsContextComponent as {
+    ({children}: { children: ReactNode }): ReactElement,
+    addSettingsChangeListener: (listener: SettingsChanger) => void,
+    removeSettingsChangeListener: (listener: SettingsChanger) => void
+}
+
+export {SettingsContextComponent};
+
+
