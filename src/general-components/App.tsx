@@ -32,6 +32,7 @@ import {Nav} from "../components/platform/nav/Nav";
 import {Container} from "react-bootstrap";
 import {LegacyErrorPageAdapter} from "./LegacyErrorPageAdapter";
 import {Messages} from "./Messages/Messages";
+import {PasswordResetRequest} from "../components/platform/verifications/PasswordResetRequest/PasswordResetRequest";
 
 
 export function App() {
@@ -63,10 +64,10 @@ export function App() {
                 <Route loggedIn={true} path={"/invitation/:token"}><InvitationDecision/></Route>
 
                 <Route path={"/verify-email/:token"}><EmailVerification/></Route>
-                (//TODO remove all usages of component and render props. (Only use children))
-                <Route path={"/reset-password/:token"} component={PasswordReset}/>
-                <Route path={"/reset-password"} exact component={PasswordReset}/>
+                <Route path={"/reset-password/:token"}><PasswordReset/></Route>
+                <Route path={"/reset-password"} exact><PasswordResetRequest/></Route>
 
+                (//TODO remove all usages of component and render props. (Only use children))
                 <Route loginAnonymous={true} loggedIn={true} path={"/pairwise-comparison"}
                        component={PairwiseComparison}/>
                 <Route loginAnonymous={true} loggedIn={true} path={"/swot-analysis"} component={SWOTAnalysis}/>
