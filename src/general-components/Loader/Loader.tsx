@@ -80,7 +80,7 @@ export function Loader({
         return function () {
             aborted = true;
         }
-        // TODO remove payload props to remove the eslint supression.
+        // TODO remove payload props to remove the eslint suppression.
         // eslint-disable-next-line
     }, [waitFor, setLoaded]);
 

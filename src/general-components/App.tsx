@@ -61,9 +61,9 @@ export function App() {
 
                 <Route loggedIn={true} path={"/invite/:sharedSaveID"}><ContributionDecision/></Route>
                 <Route loggedIn={true} path={"/invitation/:token"}><InvitationDecision/></Route>
-                (//TODO remove all usages of component and render props. (Only use children))
 
-                <Route path={"/verify-email/:token"} component={EmailVerification}/>
+                <Route path={"/verify-email/:token"}><EmailVerification/></Route>
+                (//TODO remove all usages of component and render props. (Only use children))
                 <Route path={"/reset-password/:token"} component={PasswordReset}/>
                 <Route path={"/reset-password"} exact component={PasswordReset}/>
 
