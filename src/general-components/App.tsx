@@ -1,5 +1,5 @@
 import {SettingsContextComponent} from "./Contexts/SettingsContextComponent";
-import {DarkModeChanger} from "./Darkmode/Darkmode";
+import {DarkModeChanger, DarkModeUserChanged} from "./Darkmode/Darkmode";
 import React, {useEffect} from "react";
 import {BrowserRouter, Switch} from "react-router-dom";
 import {ProtectedRoute as Route} from "./ProtectedRoute";
@@ -32,17 +32,20 @@ import {Nav} from "../components/platform/nav/Nav";
 import {Container} from "react-bootstrap";
 import {LegacyErrorPageAdapter} from "./LegacyErrorPageAdapter";
 import {Messages} from "./Messages/Messages";
+import {Session} from "./Session/Session";
 
 
 export function App() {
 
 
     useEffect(function () {
+        Session.addUserChangedCallback(DarkModeUserChanged);
         // Add SettingsChangeListener for Darkmode
         SettingsContextComponent.addSettingsChangeListener(DarkModeChanger);
 
         return () => {
             SettingsContextComponent.removeSettingsChangeListener(DarkModeChanger);
+            Session.removeUserChangedCallback(DarkModeUserChanged);
         }
     }, []);
 
@@ -112,7 +115,7 @@ export function App() {
             <>
                 <Messages xAlignment={"CENTER"} yAlignment={"BOTTOM"} style={{marginBottom: 65}}>
                     <GlobalContexts key={"global-contexts"}>
-                        <Loader key={"loader"} animate fullscreen loaded={true} variant={"style"} payload={[]}>
+                        <Loader key={"loader"} animate fullscreen loaded={true} variant={"style"}>
                             <BrowserRouter>
                                 <LegacyErrorPageAdapter/>
                                 <Nav/>

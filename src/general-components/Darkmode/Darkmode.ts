@@ -1,5 +1,6 @@
 import {SettingsList} from "../Settings/SettingsList";
 import {Session, UserCallback} from "../Session/Session";
+import {SettingsChanger} from "../Contexts/SettingsContextComponent";
 
 
 /**
@@ -8,7 +9,7 @@ import {Session, UserCallback} from "../Session/Session";
  * @param {User | null} user Das Benutzerobjekt
  * @constructor
  */
-const DarkModeUserChanged: UserCallback = (user) => {
+export const DarkModeUserChanged: UserCallback = (user) => {
     if (user === null) {
         // Darkmode
         localStorage.removeItem("darkmode");
@@ -26,7 +27,6 @@ const DarkModeUserChanged: UserCallback = (user) => {
         DarkModeChanger(settings, settings);
     }
 }
-Session.addUserChangedCallback(DarkModeUserChanged);
 
 /**
  * Wechselt das Website-Theme in den Darkmode und zurück
@@ -35,7 +35,7 @@ Session.addUserChangedCallback(DarkModeUserChanged);
  * @param {SettingsList} newSettings Die neuen Websiteeinstellungen
  * @constructor
  */
-export const DarkModeChanger = (oldSettings: SettingsList, newSettings: SettingsList) => {
+export const DarkModeChanger: SettingsChanger = (oldSettings: SettingsList, newSettings: SettingsList) => {
     let setting = newSettings.getSettingByName("Dark Mode");
     if (setting === undefined) {
         return;
