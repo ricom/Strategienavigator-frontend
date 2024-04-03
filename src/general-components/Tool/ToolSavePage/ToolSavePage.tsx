@@ -91,20 +91,14 @@ class ToolSavePage<D extends object> extends Component<ToolSavePageProps<D> & Ro
             onChanged: this.updateSave.bind(this),
             updateSaveFromRemote: this.updateSaveFromRemote
         }
-        this.resourceManager = new ResourceManager();/*{
-            resources: this.resources,
-            onChanged: this.resourceChanged.bind(this),
-            hasResource: this.hasResource.bind(this),
-            getData: this.getResourceData.bind(this),
-            getText: this.getResourceText.bind(this),
-            getBlobURL: this.getBlobURL.bind(this)
-        }*/
+        this.resourceManager = new ResourceManager();
         this.onUnmount = [];
     }
 
+    // usefully resource: https://developer.chrome.com/docs/web-platform/page-lifecycle-api
     componentDidMount = async () => {
         window.addEventListener("beforeunload", this.onBeforeUnload);
-        window.addEventListener("beforeunload", this.onUnloadUnLock);
+        window.addEventListener("pagehide", this.onUnloadUnLock);
         await this.firstLoad();
     }
 
@@ -119,13 +113,14 @@ class ToolSavePage<D extends object> extends Component<ToolSavePageProps<D> & Ro
             onUnmountCallback();
         }
 
-        // this.closeWebsocketConnection();
-
         window.removeEventListener("beforeunload", this.onBeforeUnload);
-        window.removeEventListener("beforeunload", this.onUnloadUnLock);
+        window.removeEventListener("pagehide", this.onUnloadUnLock);
     }
 
-    onUnloadUnLock = async () => {
+    onUnloadUnLock = async (event: PageTransitionEvent) => {
+        if (event.persisted) {
+            return;
+        }
         let save = this.state.save;
         if (save) {
             await this.lockSave(save, false, true);
@@ -235,16 +230,13 @@ class ToolSavePage<D extends object> extends Component<ToolSavePageProps<D> & Ro
         let isLocked: boolean | undefined = undefined;
 
         if (save) {
-            // socketInfo = await this.createSocketConnection(save);
             isLocked = await this.checkLockStatus(save);
 
-            if (save /*&& socketInfo*/ && isLocked !== undefined) {
+            if (save && isLocked !== undefined) {
                 this.setState({
                     save: save,
                     isLoading: false,
-                    isLocked: isLocked,
-                    // connection: socketInfo.connection,
-                    // channel: socketInfo.channel
+                    isLocked: isLocked
                 });
             } else {
                 legacyShowErrorPage(404);
@@ -260,11 +252,15 @@ class ToolSavePage<D extends object> extends Component<ToolSavePageProps<D> & Ro
     //     this.state.connection?.disconnect();
     // }
 
+    /**
+     * Causes a confirmation window to pop up, when leaving the web page.
+     * @param e
+     */
     private onBeforeUnload = (e: BeforeUnloadEvent) => {
         if (this.shouldPreventRouteChange()) {
             e.preventDefault();
-            e.returnValue = "";
-            return "";
+            e.returnValue = "string";
+            return "string";
         }
         return undefined;
     }
@@ -288,7 +284,7 @@ class ToolSavePage<D extends object> extends Component<ToolSavePageProps<D> & Ro
             showConfirmToolRouteChangeModal: false,
             lastLocation: undefined
         });
-    };
+    }
 
     private performRouteChange = () => {
 
