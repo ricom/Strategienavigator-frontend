@@ -1,7 +1,7 @@
 import {Component} from "react";
 import {SaveResource} from "../../Datastructures";
 import {PDFExporter} from "./PDFExporter";
-import {ResourcesType} from "../../Tool/ToolSavePage/ToolSavePage";
+import {ResourcesType} from "../../Tool/ToolSavePage/ResourceManager";
 
 interface PDFExporterPreviewProps<D> {
     save: SaveResource<D>,

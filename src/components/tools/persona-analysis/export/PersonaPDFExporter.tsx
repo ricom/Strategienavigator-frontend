@@ -4,7 +4,7 @@ import {SaveResource} from "../../../../general-components/Datastructures";
 import {SingleMessageProps} from "../../../../general-components/Messages/Messages";
 import jsPDF from "jspdf";
 import {Buffer} from 'buffer';
-import {ResourcesType} from "../../../../general-components/Tool/ToolSavePage/ToolSavePage";
+import {ResourcesType} from "../../../../general-components/Tool/ToolSavePage/ResourceManager";
 import {PersonaPersonalityComponent} from "../steps/PersonaPersonality/PersonaPersonalityComponent";
 import {PersonaSummaryItem} from "../steps/PersonaSummary/PersonaSummaryComponent";
 

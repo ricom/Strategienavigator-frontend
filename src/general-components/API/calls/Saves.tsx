@@ -1,7 +1,7 @@
 import {APIArgs, callAPI} from "../API";
 import {ImportJSONData, PaginationResource, SaveResource, SimpleSaveResource} from "../../Datastructures";
 import {Patch} from "immer";
-import {ResourcesType} from "../../Tool/ToolSavePage/ToolSavePage";
+import {ResourcesType} from "../../Tool/ToolSavePage/ResourceManager";
 
 
 export interface GetSavesArguments {

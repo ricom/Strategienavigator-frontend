@@ -1,10 +1,6 @@
 import './tool-save-page.scss'
-import React, {Component, ReactNode} from "react";
-import {
-    SaveResource,
-    SharedSavePermission,
-    SharedSavePermissionDefault,
-} from "../../Datastructures";
+import React, {Component, ReactElement, ReactNode} from "react";
+import {SaveResource, SharedSavePermission, SharedSavePermissionDefault,} from "../../Datastructures";
 import {Session} from "../../Session/Session";
 import {Loader} from "../../Loader/Loader";
 import {Prompt, RouteComponentProps} from "react-router";
@@ -23,8 +19,8 @@ import {EditSavesPermission, hasPermission} from "../../Permissions";
 import {ModalCloseable} from "../../Modal/ModalCloseable";
 import {faCheck} from "@fortawesome/free-solid-svg-icons";
 import FAE from '../../Icons/FAE';
-import {getSaveResource} from "../../API/calls/SaveResources";
 import {legacyShowErrorPage} from "../../LegacyErrorPageAdapter";
+import {IResourceManager, ResourceManager} from "./ResourceManager";
 
 
 interface ToolSaveController<D> {
@@ -35,14 +31,14 @@ interface ToolSaveController<D> {
 
 interface ToolSaveProps<D extends object> {
     saveController: ToolSaveController<D>
-    resourceManager: ResourceManager
+    resourceManager: IResourceManager
     save: SaveResource<D>
     isSaving: boolean
 }
 
 interface ToolSavePageProps<D extends object> {
     tool: Tool<D>
-    element: (saveProps: ToolSaveProps<D>) => JSX.Element
+    element: (saveProps: ToolSaveProps<D>) => ReactElement
 }
 
 interface ToolSavePageState<D extends object> {
@@ -51,27 +47,16 @@ interface ToolSavePageState<D extends object> {
     isSaving: boolean
     showConfirmToolRouteChangeModal: boolean
     lastLocation?: H.Location,
-    isLocked: boolean,
-    // connection?: Echo;
-    // channel?: PresenceChannel;
+    isLocked: boolean
 }
 
-export interface ResourceManager {
-    resources: ResourcesType,
-    onChanged: (name: string, file: File) => void,
-    hasResource: (name: string) => boolean,
-    getData: (name: string) => Blob | null,
-    getText: (name: string) => Promise<string | null>,
-    getBlobURL: (name: string) => string | null
-}
-
-export type SingleResource = {
-    file: File,
-    url: string,
-    changed: boolean
-};
-export type ResourcesType = Map<string, SingleResource>;
-
+/**
+ * Die Tools Save hat 4 Aufgaben.
+ * 1. Laden/Speichern des Saves.
+ * 2. Laden aller Resourcen
+ * 3. Änderungen am Save speichern und verarbeiten.
+ * 4. Verhindern, dass die Seite gewechselt wird, falls es noch ungespeicherte Änderungen gibt.
+ */
 class ToolSavePage<D extends object> extends Component<ToolSavePageProps<D> & RouteComponentProps<any>, ToolSavePageState<D>> {
 
     private readonly saveController: ToolSaveController<D>;
@@ -85,7 +70,6 @@ class ToolSavePage<D extends object> extends Component<ToolSavePageProps<D> & Ro
     // private updateTimeoutMS: number = 370;
 
     private readonly resourceManager: ResourceManager;
-    private readonly resources: ResourcesType = new Map();
     private onUnmount: (() => void)[];
 
     /**
@@ -107,14 +91,14 @@ class ToolSavePage<D extends object> extends Component<ToolSavePageProps<D> & Ro
             onChanged: this.updateSave.bind(this),
             updateSaveFromRemote: this.updateSaveFromRemote
         }
-        this.resourceManager = {
+        this.resourceManager = new ResourceManager();/*{
             resources: this.resources,
             onChanged: this.resourceChanged.bind(this),
             hasResource: this.hasResource.bind(this),
             getData: this.getResourceData.bind(this),
             getText: this.getResourceText.bind(this),
             getBlobURL: this.getBlobURL.bind(this)
-        }
+        }*/
         this.onUnmount = [];
     }
 
@@ -156,7 +140,7 @@ class ToolSavePage<D extends object> extends Component<ToolSavePageProps<D> & Ro
         return (
             <Route>
                 <SharedSaveContextComponent permission={this.getPermissionOfSave()}>
-                    <Loader payload={[]} loaded={!this.state.isLoading} transparent
+                    <Loader loaded={!this.state.isLoading} transparent
                             alignment={"center"} fullscreen animate={false}>
                         <UIErrorContextComponent>
                             {this.getView()}
@@ -249,7 +233,6 @@ class ToolSavePage<D extends object> extends Component<ToolSavePageProps<D> & Ro
 
 
         let isLocked: boolean | undefined = undefined;
-        // let socketInfo: { connection: any; channel: any; } | undefined = undefined;
 
         if (save) {
             // socketInfo = await this.createSocketConnection(save);
@@ -308,7 +291,6 @@ class ToolSavePage<D extends object> extends Component<ToolSavePageProps<D> & Ro
     };
 
     private performRouteChange = () => {
-        // this.closeWebsocketConnection();
 
         this.props.history.push(this.state.lastLocation?.pathname as string);
         if ((this.state.lastLocation?.pathname as string).startsWith(this.props.tool.getLink())) {
@@ -325,61 +307,15 @@ class ToolSavePage<D extends object> extends Component<ToolSavePageProps<D> & Ro
         return this.saveDirty;
     }
 
-    private resourcesMapToFileArray = (resources: ResourcesType): File[] => {
-        let files: File[] = [];
-        resources.forEach((value, key) => {
-            files.push(
-                new File([value.file], key, {type: value.file.type, lastModified: value.file.lastModified})
-            );
-        });
-        return files;
-    }
-
-    private resourceChanged = (name: string, file: File) => {
-        this.resources.set(name, {
-            file: file,
-            url: URL.createObjectURL(file),
-            changed: true
-        });
-    }
-
-    private getResourceData = (name: string): Blob | null => {
-        let res = this.resources.get(name);
-        if (res) {
-            return res.file;
-        }
-        return null;
-    }
-
-    private getResourceText = async (name: string): Promise<string | null> => {
-        let res = this.resources.get(name);
-        if (res) {
-            return await res.file.text();
-        }
-        return null;
-    }
-
-    private getBlobURL = (name: string): string | null => {
-        let res = this.resources.get(name);
-        if (res) {
-            return res.url;
-        }
-        return null;
-    }
-
-    private hasResource = (name: string): boolean => {
-        return this.resources.has(name);
-    }
-
     private save = async () => {
         if (this.state.save !== undefined) {
             this.setState({
                 isSaving: true
             });
-            // saveData.append("tool_id", String(save.tool_id)); no need to send tool_id because it is immutable
+
             const call = await updateSave(
                 this.state.save!,
-                this.resources,
+                this.resourceManager.resources,
                 {
                     errorCallback: this.onAPIError
                 }
@@ -496,26 +432,10 @@ class ToolSavePage<D extends object> extends Component<ToolSavePageProps<D> & Ro
                 save.data = JSON.parse(call.callData.data);
 
                 // load resources
-                for (const resource of save.resources) {
-                    let res = await getSaveResource(save, resource.name, {errorCallback: this.onAPIError});
-                    if (res !== null && res.success) {
-                        let blob = res.callData;
-                        let put: string | Blob = "";
-                        if (blob instanceof Blob) {
-                            put = blob;
-                        } else {
-                            put = JSON.stringify(blob, null, 2);
-                        }
-                        let file = new File([put], resource.name, {
-                            type: res.response.headers.get("Content-Type") ?? ((blob instanceof Blob) ? blob.type : "")
-                        });
-                        this.resources.set(resource.name, {
-                            file: file,
-                            url: URL.createObjectURL(file),
-                            changed: false
-                        });
-                    }
-                }
+                const resourcePromises = save.resources.map((resource) => this.resourceManager.loadResource(save, resource.name));
+
+                await Promise.all(resourcePromises);
+
                 return save;
             } else {
                 legacyShowErrorPage(403);

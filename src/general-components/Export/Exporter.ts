@@ -1,7 +1,7 @@
 import FileSaver from "file-saver";
 import {SaveResource} from "../Datastructures";
 import {SingleMessageProps} from "../Messages/Messages";
-import {ResourcesType} from "../Tool/ToolSavePage/ToolSavePage";
+import {ResourcesType} from "../Tool/ToolSavePage/ResourceManager";
 
 
 abstract class Exporter<D> {

@@ -1,7 +1,7 @@
 import {Exporter} from "./Exporter";
 import {SaveResource} from "../Datastructures";
 import {SingleMessageProps} from "../Messages/Messages";
-import {ResourcesType} from "../Tool/ToolSavePage/ToolSavePage";
+import {ResourcesType} from "../Tool/ToolSavePage/ResourceManager";
 
 
 class JSONExporter<D> extends Exporter<D> {
