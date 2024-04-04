@@ -1,26 +1,25 @@
 import './tool-save-page.scss'
 import React, {Component, ReactElement, ReactNode} from "react";
-import {SaveResource, SharedSavePermission, SharedSavePermissionDefault,} from "../../Datastructures";
+import {SaveResource, SharedSavePermission,} from "../../Datastructures";
 import {Session} from "../../Session/Session";
 import {Loader} from "../../Loader/Loader";
-import {Prompt, RouteComponentProps} from "react-router";
-import * as H from "history";
-import {getSave, lockSave, updateSave} from "../../API/calls/Saves";
+import {RouteComponentProps} from "react-router";
+import {getSave, lockSaveWithCheck, updateSave} from "../../API/calls/Saves";
 import {Tool} from "../Tool";
 import {MessageContext, Messages} from "../../Messages/Messages";
 import {Button, Modal} from "react-bootstrap";
-import {ConfirmToolRouteChangeModal} from "../ConfirmToolRouteChangeModal/ConfirmToolRouteChangeModal";
 import {Route} from "react-router-dom";
 import produce from "immer";
 import {WritableDraft} from "immer/dist/types/types-external";
 import {UIErrorContextComponent} from "../../Contexts/UIErrorContext/UIErrorContext";
 import {SharedSaveContextComponent} from "../../Contexts/SharedSaveContextComponent";
-import {EditSavesPermission, hasPermission} from "../../Permissions";
 import {ModalCloseable} from "../../Modal/ModalCloseable";
 import {faCheck} from "@fortawesome/free-solid-svg-icons";
 import FAE from '../../Icons/FAE';
 import {legacyShowErrorPage} from "../../LegacyErrorPageAdapter";
 import {IResourceManager, ResourceManager} from "./ResourceManager";
+import {PromptOnLeave} from "./PromptOnLeave/PromptOnLeave";
+import {lockAndUpdateSave} from "../../Utility/SaveUtility";
 
 
 interface ToolSaveController<D> {
@@ -44,10 +43,8 @@ interface ToolSavePageProps<D extends object> {
 interface ToolSavePageState<D extends object> {
     isLoading: boolean
     save?: SaveResource<D>
-    isSaving: boolean
-    showConfirmToolRouteChangeModal: boolean
-    lastLocation?: H.Location,
-    isLocked: boolean
+    isSaving: boolean,
+    shouldShowLockedInfo: boolean
 }
 
 /**
@@ -55,7 +52,6 @@ interface ToolSavePageState<D extends object> {
  * 1. Laden/Speichern des Saves.
  * 2. Laden aller Resourcen
  * 3. Änderungen am Save speichern und verarbeiten.
- * 4. Verhindern, dass die Seite gewechselt wird, falls es noch ungespeicherte Änderungen gibt.
  */
 class ToolSavePage<D extends object> extends Component<ToolSavePageProps<D> & RouteComponentProps<any>, ToolSavePageState<D>> {
 
@@ -81,14 +77,13 @@ class ToolSavePage<D extends object> extends Component<ToolSavePageProps<D> & Ro
     constructor(props: ToolSavePageProps<D> & RouteComponentProps<any>, context: any) {
         super(props, context);
         this.state = {
-            showConfirmToolRouteChangeModal: false,
             isSaving: false,
-            isLocked: false,
+            shouldShowLockedInfo: false,
             isLoading: true
         }
         this.saveController = {
             save: this.save.bind(this),
-            onChanged: this.updateSave.bind(this),
+            onChanged: this.updateSaveLocal.bind(this),
             updateSaveFromRemote: this.updateSaveFromRemote
         }
         this.resourceManager = new ResourceManager();
@@ -97,23 +92,21 @@ class ToolSavePage<D extends object> extends Component<ToolSavePageProps<D> & Ro
 
     // usefully resource: https://developer.chrome.com/docs/web-platform/page-lifecycle-api
     componentDidMount = async () => {
-        window.addEventListener("beforeunload", this.onBeforeUnload);
+
         window.addEventListener("pagehide", this.onUnloadUnLock);
-        await this.firstLoad();
+        await this.updateSaveFromRemote(true);
     }
 
     componentWillUnmount = async () => {
         const onUnmount = this.onUnmount;
         this.onUnmount = [];
         if (this.state.save !== undefined) {
-            await this.unlock(this.state.save);
+            lockSaveWithCheck(this.state.save, false, true).catch(this.onAPIError);
         }
 
         for (const onUnmountCallback of onUnmount) {
             onUnmountCallback();
         }
-
-        window.removeEventListener("beforeunload", this.onBeforeUnload);
         window.removeEventListener("pagehide", this.onUnloadUnLock);
     }
 
@@ -123,11 +116,7 @@ class ToolSavePage<D extends object> extends Component<ToolSavePageProps<D> & Ro
         }
         let save = this.state.save;
         if (save) {
-            await this.lockSave(save, false, true);
-        }
-
-        if (save) {
-            await this.unlock(save);
+            await lockSaveWithCheck(save, false, true);
         }
     }
 
@@ -140,13 +129,14 @@ class ToolSavePage<D extends object> extends Component<ToolSavePageProps<D> & Ro
                         <UIErrorContextComponent>
                             {this.getView()}
                         </UIErrorContextComponent>
+                        <PromptOnLeave shouldPreventChange={this.shouldPreventRouteChange()}/>
 
                         <ModalCloseable
-                            show={this.state.isLocked}
+                            show={this.state.shouldShowLockedInfo}
                             backdrop centered
                             onHide={() => {
                                 this.setState({
-                                    isLocked: false
+                                    shouldShowLockedInfo: false
                                 });
                             }}
                         >
@@ -159,7 +149,7 @@ class ToolSavePage<D extends object> extends Component<ToolSavePageProps<D> & Ro
                                     variant={"dark"}
                                     onClick={() => {
                                         this.setState({
-                                            isLocked: false
+                                            shouldShowLockedInfo: false
                                         });
                                     }}
                                 >
@@ -177,92 +167,16 @@ class ToolSavePage<D extends object> extends Component<ToolSavePageProps<D> & Ro
                         </ModalCloseable>
                     </Loader>
 
-                    <Prompt message={this.denyRouteChange}/>
-                    <ConfirmToolRouteChangeModal
-                        show={this.state.showConfirmToolRouteChangeModal}
-                        onNo={this.hideRouteChangeModal}
-                        onYes={this.performRouteChange}
-                    />
+
                 </SharedSaveContextComponent>
             </Route>
         );
     }
 
-    denyRouteChange = (location: H.Location): boolean => {
-        // Don't show if save is unchanged
-        if (!this.shouldPreventRouteChange())
-            return true;
-
-        this.setState({
-            showConfirmToolRouteChangeModal: true,
-            lastLocation: location
-        });
-        return (location.pathname === this.state.lastLocation?.pathname);
-    }
 
     public onAPIError(error: Error): void {
         // TODO: remove later
         this.context.add(error.message, "DANGER", Messages.TIMER);
-    }
-
-    public lock = async (save: SaveResource<any>) => {
-        return await this.lockSave(save, true);
-    }
-
-    public unlock = async (save: SaveResource<any>) => {
-        return await this.lockSave(save, false);
-    }
-
-    private firstLoad = async () => {
-        let ID = parseInt(this.props.match.params.id as string);
-        let save;
-        try {
-            save = await this.retrieveSave(ID);
-        } catch (e: any) {
-            if (e.message === this.INTERRUPTED) {
-                return;
-            } else {
-                throw e;
-            }
-        }
-
-
-        let isLocked: boolean | undefined = undefined;
-
-        if (save) {
-            isLocked = await this.checkLockStatus(save);
-
-            if (save && isLocked !== undefined) {
-                this.setState({
-                    save: save,
-                    isLoading: false,
-                    isLocked: isLocked
-                });
-            } else {
-                legacyShowErrorPage(404);
-                return;
-            }
-        } else {
-            legacyShowErrorPage(404);
-            return;
-        }
-    }
-
-    // private closeWebsocketConnection() {
-    //     this.state.connection?.disconnect();
-    // }
-
-    /**
-     * Causes a confirmation window to pop up, when leaving the web page.
-     * @param e
-     */
-    private onBeforeUnload = (e: BeforeUnloadEvent) => {
-        if (this.shouldPreventRouteChange()) {
-            e.preventDefault();
-            e.returnValue = "string";
-            return "string";
-        }
-        return undefined;
     }
 
     private getView(): ReactNode {
@@ -279,23 +193,6 @@ class ToolSavePage<D extends object> extends Component<ToolSavePageProps<D> & Ro
         }
     }
 
-    private hideRouteChangeModal = () => {
-        this.setState({
-            showConfirmToolRouteChangeModal: false,
-            lastLocation: undefined
-        });
-    }
-
-    private performRouteChange = () => {
-
-        this.props.history.push(this.state.lastLocation?.pathname as string);
-        if ((this.state.lastLocation?.pathname as string).startsWith(this.props.tool.getLink())) {
-            this.setState({
-                showConfirmToolRouteChangeModal: false
-            });
-        }
-    };
-
     /**
      * Gibt zurück, ob ein Dialog angezeigt werden soll, der um Bestätigung bittet, ob die Seite verlassen werden soll
      */
@@ -304,107 +201,81 @@ class ToolSavePage<D extends object> extends Component<ToolSavePageProps<D> & Ro
     }
 
     private save = async () => {
-        if (this.state.save !== undefined) {
-            this.setState({
-                isSaving: true
-            });
-
-            const call = await updateSave(
-                this.state.save!,
-                this.resourceManager.resources,
-                {
-                    errorCallback: this.onAPIError
-                }
-            );
-
-            this.setState({
-                isSaving: false
-            });
-            const success = call !== null && call.success;
-
-            if (success)
-                this.saveDirty = false;
-            return success;
-        } else {
+        const save = this.state.save;
+        if (save === undefined) {
             return false;
         }
-    }
+        this.setState({
+            isSaving: true
+        });
 
-    private updateSave = (changes: ((save: WritableDraft<SaveResource<D>>) => void) | SaveResource<D>, callback?: () => void) => {
-        let newSave;
-        if (typeof changes === "object") {
-            newSave = changes;
-        } else {
-            if (this.state.save !== undefined) {
-                newSave = produce(this.state.save, changes);
+        const call = await updateSave(
+            this.state.save!,
+            this.resourceManager.resources,
+            {
+                errorCallback: this.onAPIError
             }
-            this.saveDirty = true;
-        }
+        );
 
         this.setState({
-            save: newSave
+            isSaving: false
+        });
+
+        const success = call !== null && call.success;
+        if (success)
+            this.saveDirty = false;
+        return success;
+    }
+
+    private updateSaveLocal = (changes: ((save: WritableDraft<SaveResource<D>>) => void) | SaveResource<D>, callback?: () => void) => {
+        this.setState((oldState) => {
+            let newSave;
+            if (typeof changes === "object") {
+                newSave = changes;
+            } else {
+                const oldSave = oldState.save;
+                if (oldSave !== undefined)
+                    newSave = produce(oldSave, changes);
+                this.saveDirty = true;
+            }
+            return {...oldState, save: newSave};
         }, callback);
     }
 
-    private lockSave = async (save: SaveResource<any>, lock: boolean, keepalive?: boolean) => {
-        if (lock && save.locked_by !== null) {
-            return;
-        }
-        if (!lock && save.locked_by !== Session.currentUser?.getID()) {
-            return;
-        }
-
-        return await lockSave(save.id, lock, {
-            errorCallback: this.onAPIError,
-            keepalive: keepalive
-        });
-    }
-
-    private updateSaveFromRemote = async () => {
+    /**
+     * Loads the save from the backend, and when specified updates the lock status.
+     * @param updateLock whether to update the lock status in the backend.
+     */
+    private updateSaveFromRemote = async (updateLock: boolean = false) => {
         this.setState({isLoading: true});
-        if (this.state.save) {
-            let save;
-            try {
-                save = await this.retrieveSave(this.state.save.id);
-            } catch (e: any) {
-                if (e.message === this.INTERRUPTED) {
-                    return;
-                } else {
-                    throw e;
-                }
+        let ID = parseInt(this.props.match.params.id as string);
+        let save;
+        try {
+            save = await this.retrieveSave(ID);
+        } catch (e: any) {
+            if (e.message === this.INTERRUPTED) {
+                return;
+            } else {
+                throw e;
             }
+        }
 
-            if (save) {
+        if (save) {
+            if (updateLock) {
+                const isLocked = await lockAndUpdateSave(save, Session.currentUser?.getID()!!);
                 this.setState({
-                    save: save,
-                    isLoading: false
+                    shouldShowLockedInfo: isLocked
                 });
             }
+
+            this.setState({
+                save: save,
+                isLoading: false
+            });
+        } else {
+            legacyShowErrorPage(404);
+            return;
         }
-        this.setState({isLoading: false});
-    }
-
-    private checkLockStatus = async (save: SaveResource<D>): Promise<boolean> => {
-        save.permission = save.permission ?? {
-            permission: SharedSavePermissionDefault,
-            created_at: ""
-        };
-        let permission = save.permission.permission;
-        let isLocked = hasPermission(permission, EditSavesPermission);
-
-        if (
-            save.locked_by === null ||
-            save.locked_by === Session.currentUser?.getID()
-        ) {
-            isLocked = false;
-        }
-
-        await this.lock(save);
-
-        if (save.locked_by === null) {
-            save.locked_by = Session.currentUser!.getID();
-        }
-        return isLocked;
     }
 
     private readonly INTERRUPTED = "interrupted";
@@ -448,7 +319,7 @@ class ToolSavePage<D extends object> extends Component<ToolSavePageProps<D> & Ro
         if (!s) {
             return SharedSavePermission.READ;
         }
-        let isLocked = s.locked_by ? s.locked_by !== Session.currentUser?.getID() : false;
+        let isLocked = ((!!s.locked_by) && s.locked_by !== Session.currentUser?.getID());
         if (!s.permission) {
             return s.owner.id === Session.currentUser?.getID() ?
                 isLocked ?
