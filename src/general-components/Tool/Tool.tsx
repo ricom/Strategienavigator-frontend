@@ -126,8 +126,7 @@ abstract class Tool<D extends object> extends Component<RouteComponentProps<{}>,
                     <Route
                         exact
                         render={(routeProps) => {
-                            return <ToolSavePage tool={this} history={routeProps.history} location={routeProps.location}
-                                                 match={routeProps.match} element={this.buildSaveBuilder.bind(this)}/>
+                            return <ToolSavePage tool={this} element={this.buildSaveBuilder.bind(this)}/>
                         }}
                         path={this.viewPath}/>
                 </Switch>

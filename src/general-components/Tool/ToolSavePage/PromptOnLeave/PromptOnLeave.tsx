@@ -6,10 +6,14 @@ import * as H from "history";
 
 
 export interface PromptOnLeaveProps {
-    shouldPreventChange: boolean
+    shouldPreventChange: boolean,
+    /**
+     * Deaktiviert den beforeunload listener.
+     */
+    disableNativeDialog?: boolean
 }
 
-export function PromptOnLeave({shouldPreventChange}: PromptOnLeaveProps) {
+export function PromptOnLeave({shouldPreventChange, disableNativeDialog = false}: PromptOnLeaveProps) {
 
     // State
     const [showConfirmToolRouteChangeModal, setShowConfirmToolRouteChangeModal] = useState(false);
@@ -57,12 +61,16 @@ export function PromptOnLeave({shouldPreventChange}: PromptOnLeaveProps) {
             }
             return undefined;
         }
-        window.addEventListener("beforeunload", onBeforeUnload);
+        if (!disableNativeDialog) {
+            window.addEventListener("beforeunload", onBeforeUnload);
+        }
 
         return () => {
-            window.removeEventListener("beforeunload", onBeforeUnload);
+            if (!disableNativeDialog) {
+                window.removeEventListener("beforeunload", onBeforeUnload);
+            }
         }
-    }, [shouldPreventChange]);
+    }, [disableNativeDialog, shouldPreventChange]);
 
 
     return (<>

@@ -1,6 +1,10 @@
 import {SaveResource, SharedSavePermissionDefault} from "../Datastructures";
 import {EditSavesPermission, hasPermission} from "../Permissions";
-import {lockSaveWithCheck} from "../API/calls/Saves";
+import {getSave, lockSaveWithCheck} from "../API/calls/Saves";
+import {ResourceManager} from "../Tool/ToolSavePage/ResourceManager";
+import {HTTPError} from "./ErrorTypes";
+
+export const INTERRUPTED = "interrupted";
 
 /**
  * Updates the given save, so it has appropriate permission and locked status and sends a lock request to the backend.
@@ -30,4 +34,30 @@ export async function lockAndUpdateSave(save: SaveResource<any>, userId: number)
         save.locked_by = userId;
     }
     return shouldShowLockedInfo;
+}
+
+export async function retrieveSave<D>(ID: number, toolId: number, resourceManager: ResourceManager): Promise<SaveResource<D> | undefined> {
+    let call = await getSave<any>(ID, {
+        errorCallback: (reason) => {
+            throw reason;
+        }
+    });
+    if (call && call.success) {
+        if (call.callData.tool_id === toolId) {
+            let save: SaveResource<D> = call.callData;
+            save.data = JSON.parse(call.callData.data);
+
+            resourceManager.clearResources();
+            // load resources
+            const resourcePromises = save.resources.map((resource) => resourceManager.loadResource(save, resource.name));
+
+            await Promise.all(resourcePromises);
+
+            return save;
+        } else {
+            throw new HTTPError("Tried to open a save which was created with another tool.",403);
+        }
+    } else {
+        throw new HTTPError("Save was not found.",404);
+    }
 }

@@ -93,4 +93,13 @@ export class ResourceManager implements IResourceManager {
         return files;
     }
 
+    clearResources() {
+        const iterator = this.resources.values();
+        let resource = iterator.next();
+        while (!resource.done) {
+            URL.revokeObjectURL(resource.value.url);
+            resource = iterator.next();
+        }
+        this.resources.clear();
+    }
 }
