@@ -89,7 +89,7 @@ Cypress.Commands.add("visitSite", (site, clickOn) => {
 //saveSlot string: Expample: "swot-1" for a first step save for SWOT, which slot has what save look into saveDummyData.json in fixtures
 //name string: name for the save
 //tool_id int : Which tool, 2 for SWOT-Analysis
-//owner_id int: optional: standard is 0 for max@test.test
+//owner_id int: optional: standard is 1 for max@test.test
 Cypress.Commands.add('CreateSave', (saveSlot, name, tool_id, owner_id = 1) => {
     
     cy.fixture("saveData/" + saveSlot).then(function (SaveData) {
@@ -110,31 +110,43 @@ Cypress.Commands.add('CreateSave', (saveSlot, name, tool_id, owner_id = 1) => {
 //tool: string = Which tool to load a save from
 //Options: "swot"
 Cypress.Commands.add('LoginAndLoad', (tool) => {
-    
-    if (tool == "swot") {
-        cy.visit("/")
-        cy.loginViaApi()
-        cy.visit("/swot-analysis")
-        cy.url()
-        .should("include", "swot-analysis")
-        
-        cy.intercept('GET', /.*api\/saves.*/).as('loadSave')
-        cy.contains("TEST-SWOT VON MAX")
+
+    let url;
+    let saveName;
+
+    if (tool === "swot") {
+        url = "swot-analysis"
+        saveName = "TEST-SWOT VON MAX"
+    }else if(tool === "persona"){
+        url = "persona-analysis"
+        saveName = "TEST-PERSONA VON MAX"
+    }
+
+    cy.visit("/")
+    cy.loginViaApi()
+    cy.visit("/" + url)
+    cy.url()
+        .should("include", url)
+
+    cy.intercept('GET', /.*api\/saves.*/).as('loadSave')
+    cy.contains(saveName)
         .click()
-        
-        
-        cy.wait("@loadSave")
-        cy.get("@loadSave")
+
+
+    cy.wait("@loadSave")
+    cy.get("@loadSave")
         .its("response")
         .should('include',
             {
                 statusCode: 200
             })
-        
-        cy.url()
-        .should("include", "swot-analysis")
-        
-    }
+
+    cy.url()
+        .should("include", url)
     cy.log(tool + " - Save loaded")
     
+})
+
+Cypress.Commands.add("DeleteSavesWithName",function (name) {
+    cy.task("queryDb", `DELETE FROM \`${Cypress.env("DB_NAME")}\`.saves WHERE name="${name}";`);
 })
