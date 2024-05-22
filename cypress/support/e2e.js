@@ -25,7 +25,7 @@
 // Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
 
 Cypress.Commands.add('loginViaApi', (username = Cypress.env("TEST_LOGIN_USERNAME"), password = Cypress.env("TEST_LOGIN_PASSWORD")) => {
-    
+
     let data = {
         grant_type: 'password',
         client_id: Cypress.env("APP_CLIENT_ID"),
@@ -34,7 +34,7 @@ Cypress.Commands.add('loginViaApi', (username = Cypress.env("TEST_LOGIN_USERNAME
         password: password,
         scope: ''
     };
-    
+
     cy.request("POST", Cypress.env("BACKEND_URL") + "oauth/token", data).then((resp) => {
         window.sessionStorage.setItem("token", resp.body.access_token);
     });
@@ -42,34 +42,34 @@ Cypress.Commands.add('loginViaApi', (username = Cypress.env("TEST_LOGIN_USERNAME
 
 //Index ist welche Logindata von der testLoginData.json
 Cypress.Commands.add('loginViaVisual', (index = -1) => {
-    
+
     cy.fixture("testLoginData").then(function (LoginData) {
         this.LoginData = LoginData;
-        
+
         var username
         var password
-        if (index == -1) {
+        if (index === -1) {
             username = Cypress.env("TEST_LOGIN_USERNAME")
             password = Cypress.env("TEST_LOGIN_PASSWORD")
         } else {
             username = this.LoginData[index]["username"]
             password = this.LoginData[index]["password"]
         }
-        
+
         cy.log(username)
         cy.log('Logs in visual as ' + username)
-        
+
         cy.visit("/login")
         cy.get('input[id="email"]')
-        .clear()
-        .type(username)
+            .clear()
+            .type(username)
         cy.get('input[id="password"]')
-        .clear()
-        .type(password)
+            .clear()
+            .type(password)
         cy.intercept("GET", /.*users.*/).as('user')
         cy.get('button[type="submit"]')
-        .click()
-        
+            .click()
+
         cy.log("Logged in as " + username)
         cy.wait("@user")
     })
@@ -91,11 +91,11 @@ Cypress.Commands.add("visitSite", (site, clickOn) => {
 //tool_id int : Which tool, 2 for SWOT-Analysis
 //owner_id int: optional: standard is 1 for max@test.test
 Cypress.Commands.add('CreateSave', (saveSlot, name, tool_id, owner_id = 1) => {
-    
-    cy.fixture("saveData/" + saveSlot).then(function (SaveData) {
+
+    return cy.fixture("saveData/" + saveSlot).then(function (SaveData) {
         this.SaveData = SaveData
         var save = JSON.stringify(SaveData)
-        cy.task("queryDb",
+        return cy.task("queryDb",
             `INSERT INTO \`${Cypress.env("DB_NAME")}\`.saves
         (data, name, tool_id, owner_id, description)
         VALUES
@@ -104,7 +104,17 @@ Cypress.Commands.add('CreateSave', (saveSlot, name, tool_id, owner_id = 1) => {
         ` + tool_id + `,
         ` + owner_id + `,
         "TEST_SAVE");`);
-    })
+    });
+})
+
+//Parameter
+//saveSlot string: Expample: "swot-1" for a first step save for SWOT, which slot has what save look into saveDummyData.json in fixtures
+//name string: name for the save
+//tool_id int : Which tool, 2 for SWOT-Analysis
+//owner_id int: optional: standard is 1 for max@test.test
+Cypress.Commands.add('InsertResource', (saveId, path, name, type) => {
+
+    cy.task("insertResource", {saveId, path, name, type});
 })
 //Parameter
 //tool: string = Which tool to load a save from
@@ -117,7 +127,7 @@ Cypress.Commands.add('LoginAndLoad', (tool) => {
     if (tool === "swot") {
         url = "swot-analysis"
         saveName = "TEST-SWOT VON MAX"
-    }else if(tool === "persona"){
+    } else if (tool === "persona") {
         url = "persona-analysis"
         saveName = "TEST-PERSONA VON MAX"
     }
@@ -144,9 +154,9 @@ Cypress.Commands.add('LoginAndLoad', (tool) => {
     cy.url()
         .should("include", url)
     cy.log(tool + " - Save loaded")
-    
+
 })
 
-Cypress.Commands.add("DeleteSavesWithName",function (name) {
+Cypress.Commands.add("DeleteSavesWithName", function (name) {
     cy.task("queryDb", `DELETE FROM \`${Cypress.env("DB_NAME")}\`.saves WHERE name="${name}";`);
 })
