@@ -77,6 +77,7 @@ export function ToolSavePage<D extends object>({tool, element}: ToolSavePageProp
         showMessage(error.message, "DANGER", Messages.TIMER);
     }, [showMessage]);
 
+    //eslint-disable-next-line
     const resourceManager = useMemo(() => new ResourceManager(), [saveId]);
 
     useEffect(() => {
