@@ -1,4 +1,4 @@
-import React from "react";
+import React, {ReactElement} from "react";
 import {Step, StepProp} from "../../../../../general-components/Tool/SteppableTool/StepComponent/Step/Step";
 import {PersonaAnalysisValues} from "../../PersonaAnalysis";
 import {Image} from "react-bootstrap";
@@ -19,7 +19,7 @@ export class PersonaSummaryComponent extends Step<PersonaAnalysisValues, {}> {
         super(props, context);
     }
 
-    build(): JSX.Element {
+    build(): ReactElement {
         let info = this.props.save.data["persona-info"];
         let personality = this.props.save.data["persona-personality"];
 
@@ -36,13 +36,13 @@ export class PersonaSummaryComponent extends Step<PersonaAnalysisValues, {}> {
                                    src={this.props.resourceManager.getBlobURL("avatar") ?? undefined}/>
                         </div>
                     </div>
-                    {Object.entries(personality.fields).map(([name, value], index) => {
+                    {Object.entries(personality.fields).map(([name, value]) => {
                         return (
                             <PersonaInfoItem
                                 key={"persona-info-item-" + name}
                                 className={"item"}
-                                title={PersonaPersonalityComponent.names[index] ?? ""}
-                                icon={PersonaPersonalityComponent.icons[index] ?? undefined}
+                                title={PersonaPersonalityComponent.names[name] ?? ""}
+                                icon={PersonaPersonalityComponent.icons[name] ?? undefined}
                                 items={value}
                             />
                         );
@@ -57,10 +57,10 @@ export class PersonaSummaryComponent extends Step<PersonaAnalysisValues, {}> {
                             />
                         )
                     })}
-                    {Object.entries(personality.fieldsElse).map(([name, value], index) => {
+                    {Object.entries(personality.fieldsElse).map(([name, value]) => {
                         let values = value;
                         // Sonderfall: Zitate
-                        if (index === 0) {
+                        if (name==="statements") {
                             values = value.map(v => {
                                 let value = Object.assign({}, v);
                                 if (!value.name.startsWith('"')) {
@@ -73,13 +73,12 @@ export class PersonaSummaryComponent extends Step<PersonaAnalysisValues, {}> {
                             });
                         }
 
-                        let length = Object.keys(personality!.fields).length;
                         return (
                             <PersonaInfoItem
                                 key={"persona-info-item-" + name}
                                 className={"item"}
-                                title={PersonaPersonalityComponent.names[length + index] ?? ""}
-                                icon={PersonaPersonalityComponent.icons[length + index] ?? undefined}
+                                title={PersonaPersonalityComponent.names[name] ?? ""}
+                                icon={PersonaPersonalityComponent.icons[name] ?? undefined}
                                 items={values}
                             />
                         );

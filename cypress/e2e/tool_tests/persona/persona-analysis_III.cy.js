@@ -18,10 +18,10 @@ describe('Persona Analyisis Part III', () => {
             .closest(".info-container").contains("pains-Value");
 
         cy.get("@tab").contains("Gains")
-            .closest(".info-container").contains("gains-value");
+            .closest(".info-container").contains("gains-Value");
 
         cy.get("@tab").contains("Demographische Daten")
-            .closest(".info-container").contains("demographics-value");
+            .closest(".info-container").contains("demographics-Value");
 
         cy.get("@tab").contains("Statements")
             .closest(".info-container").contains("\"TestStatement-Value\"");

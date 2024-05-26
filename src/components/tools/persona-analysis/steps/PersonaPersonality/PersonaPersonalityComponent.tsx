@@ -1,4 +1,4 @@
-import React, {ReactNode} from "react";
+import React, {ReactElement, ReactNode} from "react";
 import {Step, StepProp} from "../../../../../general-components/Tool/SteppableTool/StepComponent/Step/Step";
 import {PersonaAnalysisValues} from "../../PersonaAnalysis";
 import {CardComponent, CardComponentFields} from "../../../../../general-components/CardComponent/CardComponent";
@@ -69,29 +69,29 @@ export class PersonaPersonalityComponent extends Step<PersonaAnalysisValues, {}>
     static MAX_INDIVIDUAL_CARDS = PersonaPersonalityComponent.DEFAULT_MAX;
 
     static COUNTER = new NumberCounter();
-    public static names: string[] = [
-        "Demographische Daten",
-        "Pains (Frust, Probleme, Schmerzpunkte)",
-        "Gains (Ziele, Wünsche, Gewinne)",
-        "Statements (Zitate, Aussagen)",
-        "Dominierendes Grundmotiv und wie lässt sich dies erklären?",
-        "Wie lässt sich die Persona in ein/zwei Sätzen beschreiben?"
-    ];
-    public static icons: IconDefinition[] = [
-        faUser,
-        faHeartBroken,
-        faHeartbeat,
-        faMicrophone,
-        faFire,
-        faPen
-    ];
+    public static names: { [key: string]: string } = {
+        "demograph": "Demographische Daten",
+        "pains": "Pains (Frust, Probleme, Schmerzpunkte)",
+        "gains": "Gains (Ziele, Wünsche, Gewinne)",
+        "statements": "Statements (Zitate, Aussagen)",
+        "motives": "Dominierendes Grundmotiv und wie lässt sich dies erklären?",
+        "keywords": "Wie lässt sich die Persona in ein/zwei Sätzen beschreiben?"
+    };
+    public static icons: {[key:string]: IconDefinition} = {
+        "demograph":faUser,
+        "pains": faHeartBroken,
+        "gains": faHeartbeat,
+        "statements": faMicrophone,
+        "motives": faFire,
+        "keywords": faPen
+    };
     // Change listener
     private demoChanged = this.applyChanges.bind(this, "demo");
     private painsChanged = this.applyChanges.bind(this, "pain");
     private gainsChanged = this.applyChanges.bind(this, "gain");
     public items: ItemsInterface[] = [
         {
-            legend: PersonaPersonalityComponent.names[0],
+            legend: PersonaPersonalityComponent.names["demograph"],
             name: "demograph",
             min: PersonaPersonalityComponent.MIN_DEMO,
             max: PersonaPersonalityComponent.MAX_DEMO,
@@ -99,7 +99,7 @@ export class PersonaPersonalityComponent extends Step<PersonaAnalysisValues, {}>
             withDesc: false
         },
         {
-            legend: PersonaPersonalityComponent.names[1],
+            legend: PersonaPersonalityComponent.names["pains"],
             name: "pains",
             min: PersonaPersonalityComponent.MIN_PAINS,
             max: PersonaPersonalityComponent.MAX_PAINS,
@@ -107,7 +107,7 @@ export class PersonaPersonalityComponent extends Step<PersonaAnalysisValues, {}>
             withDesc: false
         },
         {
-            legend: PersonaPersonalityComponent.names[2],
+            legend: PersonaPersonalityComponent.names["gains"],
             name: "gains",
             min: PersonaPersonalityComponent.MIN_GAINS,
             max: PersonaPersonalityComponent.MAX_GAINS,
@@ -120,7 +120,7 @@ export class PersonaPersonalityComponent extends Step<PersonaAnalysisValues, {}>
     private keyWordsChanged = this.applyChanges.bind(this, "key");
     public itemsElse = [
         {
-            legend: PersonaPersonalityComponent.names[3],
+            legend: PersonaPersonalityComponent.names["statements"],
             name: "statements",
             min: PersonaPersonalityComponent.MIN_STATEMENTS,
             max: PersonaPersonalityComponent.MAX_STATEMENTS,
@@ -128,7 +128,7 @@ export class PersonaPersonalityComponent extends Step<PersonaAnalysisValues, {}>
             withDesc: false
         },
         {
-            legend: PersonaPersonalityComponent.names[4],
+            legend: PersonaPersonalityComponent.names["motives"],
             name: "motives",
             min: PersonaPersonalityComponent.MIN_MOTIVES,
             max: PersonaPersonalityComponent.MAX_MOTIVES,
@@ -136,7 +136,7 @@ export class PersonaPersonalityComponent extends Step<PersonaAnalysisValues, {}>
             withDesc: true
         },
         {
-            legend: PersonaPersonalityComponent.names[5],
+            legend: PersonaPersonalityComponent.names["keywords"],
             name: "keywords",
             min: PersonaPersonalityComponent.MIN_KEYWORDS,
             max: PersonaPersonalityComponent.MAX_KEYWORDS,
@@ -149,7 +149,7 @@ export class PersonaPersonalityComponent extends Step<PersonaAnalysisValues, {}>
         super(props, context);
     }
 
-    build(): JSX.Element {
+    build(): ReactElement {
         let data = this.props.save.data["persona-personality"];
         if (data) {
             return (
