@@ -24,6 +24,7 @@ export default defineConfig({
         TEST_LOGIN_USERNAME: process.env.CYPRESS_TEST_LOGIN_USERNAME??"max@test.test",
         TEST_LOGIN_PASSWORD: process.env.CYPRESS_TEST_LOGIN_PASSWORD??"password",
     },
+    watchForFileChanges: process.env.CYPRESS_WATCH_FOR_FILE_CHANGES!=="false",
 
 
     e2e: {
@@ -41,6 +42,5 @@ export default defineConfig({
             bundler: 'webpack'
         },
         supportFile: false,
-
     },
 });
