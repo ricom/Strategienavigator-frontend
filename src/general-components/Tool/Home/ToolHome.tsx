@@ -48,7 +48,6 @@ export interface SavesControlCallbacks {
 
 export function ToolHome({
                              tool,
-                             info,
                              children
                          }: ToolHomeProps) {
     // STATES
@@ -121,7 +120,7 @@ export function ToolHome({
             deleteSave: deleteSave,
             openInviteModal: setShowInviteModal
         }
-    }, [paginationLoader]);
+    }, [paginationLoader,setOrderDesc,setShowDeleteModal]);
 
     const navigateToNewTool = useCallback(() => history.push(tool.getLink() + "/new"), [tool, history])
 
@@ -175,7 +174,7 @@ export function ToolHome({
     const onCloseDeleteModal = useCallback(() => {
         setShowDeleteModal(false);
         setToDeleteSave(undefined);
-    }, []);
+    }, [setShowDeleteModal,setToDeleteSave]);
 
     const onDeleteModal = useCallback(async (id: number) => {
         await deleteSave(id);
@@ -183,7 +182,7 @@ export function ToolHome({
         setToDeleteSave(undefined);
         savesControlCallbacks.updatePages()
             .catch(console.error);
-    }, [savesControlCallbacks.updatePages]);
+    }, [savesControlCallbacks]);
 
     const closeInviteModal = useCallback(() => {
         setShowInviteModal(null);
@@ -210,7 +209,7 @@ export function ToolHome({
                 )}
             </h4>
 
-            {info?.shortDescription}
+            {tool.renderShortDescription()}
 
             <div className={"button-container mb-0 mt-2"}>
                 {isDesktop && (

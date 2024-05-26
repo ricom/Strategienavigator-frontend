@@ -1,21 +1,18 @@
 import {IconDefinition} from "@fortawesome/fontawesome-svg-core";
-import {ReactNode} from "react";
+import {ReactElement, ReactNode} from "react";
 import {JSONImporter} from "../../Import/JSONImporter";
 import {Exporter} from "../../Export/Exporter";
 import {ToolSaveProps} from "../ToolSavePage/ToolSavePage";
+import {types} from "sass";
+import Error = types.Error;
 
 export abstract class ToolData<D extends object> {
-    // TOOL META DATA
-    private readonly homePath;
-    private readonly newPath;
-    private readonly viewPath;
-
     // TOOL INFO
     private toolName: string;
     private toolIcon: IconDefinition;
     private toolID: number;
     private readonly toolLink: string;
-    private maintenance = false;
+    private _maintenance = false;
 
     // Export
     private readonly exporters: Exporter<object>[];
@@ -29,11 +26,6 @@ export abstract class ToolData<D extends object> {
         this.toolID = toolID;
 
         this.toolLink = toolLink;
-
-        // setup route paths
-        this.homePath = this.getLink();
-        this.newPath = this.getLink() + "/new";
-        this.viewPath = this.getLink() + "/:id";
         this.exporters = [];
     }
 
@@ -63,7 +55,7 @@ export abstract class ToolData<D extends object> {
     }
 
     public setMaintenance(maintenance: boolean) {
-        this.maintenance = maintenance;
+        this._maintenance = maintenance;
     }
 
     public hasImporter = (): boolean => {
@@ -73,18 +65,6 @@ export abstract class ToolData<D extends object> {
     public hasTutorial = (): boolean => {
         let tutorial = this.renderTutorial();
         return (tutorial !== null && tutorial !== undefined);
-    }
-
-    protected setID = (toolID: number) => {
-        this.toolID = toolID;
-    }
-
-    protected setToolname = (toolName: string) => {
-        this.toolName = toolName;
-    }
-
-    protected setToolIcon = (toolIcon: IconDefinition) => {
-        this.toolIcon = toolIcon;
     }
 
     /**
@@ -110,11 +90,18 @@ export abstract class ToolData<D extends object> {
         }
     }
 
-    protected abstract getInitData(): D;
 
-    protected abstract renderShortDescription(): ReactNode;
+    get maintenance(): boolean {
+        return this._maintenance;
+    }
 
-    protected abstract buildSaveBuilder(saveProps: ToolSaveProps<D>): JSX.Element
+
+
+    public abstract getInitData(): D;
+
+    public abstract renderShortDescription(): ReactNode;
+
+    public abstract buildSaveBuilder(saveProps: ToolSaveProps<D>): ReactElement
 
     public abstract renderTutorial(): ReactNode;
 
