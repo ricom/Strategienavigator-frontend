@@ -1,0 +1,67 @@
+{
+  "persona-info": {
+    "age": 12,
+    "firstname": "Testname"
+  },
+  "persona-summary": null,
+  "persona-personality": {
+    "fields": {
+      "gains": [
+        {
+          "id": null,
+          "desc": "",
+          "name": "gains-Value"
+        }
+      ],
+      "pains": [
+        {
+          "id": null,
+          "desc": "",
+          "name": "pains-Value"
+        }
+      ],
+      "demograph": [
+        {
+          "id": null,
+          "desc": "",
+          "name": "demographics-Value"
+        }
+      ]
+    },
+    "fieldsElse": {
+      "motives": [
+        {
+          "id": null,
+          "desc": "testMotive2",
+          "name": "testMotive-Value"
+        }
+      ],
+      "keywords": [
+        {
+          "id": null,
+          "desc": "",
+          "name": "Two sentences.-Value"
+        }
+      ],
+      "statements": [
+        {
+          "id": null,
+          "desc": "",
+          "name": "\\\"TestStatement-Value\\\""
+        }
+      ]
+    },
+    "individual": [
+      {
+        "name": "KatTest-Value",
+        "fields": [
+          {
+            "id": null,
+            "desc": "",
+            "name": "testKat-Value"
+          }
+        ]
+      }
+    ]
+  }
+}
