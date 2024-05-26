@@ -9,7 +9,7 @@ import {ComponentClass, FunctionComponent} from "react";
 import {TestAnalysisValues} from "../../TestAnalysis";
 import {TestResourcesComponent} from "./TestResourcesComponent";
 import {validateFile} from "../../../../../general-components/Tool/Resources";
-import {ResourcesType} from "../../../../../general-components/Tool/ToolSavePage/ToolSavePage";
+import {ResourcesType} from "../../../../../general-components/Tool/ToolSavePage/ResourceManager";
 
 class TestResources implements StepDefinition<TestAnalysisValues>, StepDataHandler<TestAnalysisValues> {
     form: FunctionComponent<StepProp<TestAnalysisValues>> | ComponentClass<StepProp<TestAnalysisValues>>;

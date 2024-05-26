@@ -64,6 +64,7 @@ export function Loader({
                        }: LoaderProps) {
     const [loadedState, setLoaded] = useState(!!loadedProp);
 
+
     useEffect(() => {
         let aborted = false;
 
@@ -79,7 +80,9 @@ export function Loader({
         return function () {
             aborted = true;
         }
-    }, [payload, waitFor, setLoaded]);
+        // TODO remove payload props to remove the eslint suppression.
+        // eslint-disable-next-line
+    }, [waitFor, setLoaded]);
 
     let loaded = loadedProp ?? loadedState;
 

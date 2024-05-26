@@ -32,6 +32,7 @@ import {Nav} from "../components/platform/nav/Nav";
 import {Container} from "react-bootstrap";
 import {LegacyErrorPageAdapter} from "./LegacyErrorPageAdapter";
 import {Messages} from "./Messages/Messages";
+import {PasswordResetRequest} from "../components/platform/verifications/PasswordResetRequest/PasswordResetRequest";
 
 
 export function App() {
@@ -49,23 +50,24 @@ export function App() {
     function getRouterSwitch() {
         return (
             <Switch>
-                <Route path={"/"} exact component={Home}/>
-                <Route path={"/legal-notice"} exact component={Imprint}/>
-                <Route path={"/data-privacy"} exact component={DataPrivacy}/>
-                <Route path={"/about-us"} exact component={AboutUs}/>
-                <Route loggedIn={false} path={"/login"} exact component={Login}/>
-                <Route loggedIn={undefined} path={"/logout"} exact component={Logout}/>
-                <Route loggedIn={false} path={"/register"} exact component={Register}/>
-                <Route loggedIn={true} path={"/settings"} exact component={Settings}/>
-                <Route loggedIn={true} anonymous={false} path={"/my-profile"} exact component={MyProfile}/>
+                <Route path={"/"} exact><Home/></Route>
+                <Route path={"/legal-notice"} exact><Imprint/></Route>
+                <Route path={"/data-privacy"} exact><DataPrivacy/></Route>
+                <Route path={"/about-us"} exact><AboutUs/></Route>
+                <Route loggedIn={false} path={"/login"} exact><Login/></Route>
+                <Route loggedIn={undefined} path={"/logout"} exact><Logout/></Route>
+                <Route loggedIn={false} path={"/register"} exact><Register/></Route>
+                <Route loggedIn={true} path={"/settings"} exact><Settings/></Route>
+                <Route loggedIn={true} anonymous={false} path={"/my-profile"} exact><MyProfile/></Route>
 
-                <Route loggedIn={true} path={"/invite/:sharedSaveID"} component={ContributionDecision}/>
-                <Route loggedIn={true} path={"/invitation/:token"} component={InvitationDecision}/>
+                <Route loggedIn={true} path={"/invite/:sharedSaveID"}><ContributionDecision/></Route>
+                <Route loggedIn={true} path={"/invitation/:token"}><InvitationDecision/></Route>
 
-                <Route path={"/verify-email/:token"} component={EmailVerification}/>
-                <Route path={"/reset-password/:token"} component={PasswordReset}/>
-                <Route path={"/reset-password"} exact component={PasswordReset}/>
+                <Route path={"/verify-email/:token"}><EmailVerification/></Route>
+                <Route path={"/reset-password/:token"}><PasswordReset/></Route>
+                <Route path={"/reset-password"} exact><PasswordResetRequest/></Route>
 
+                (//TODO remove all usages of component and render props. (Only use children))
                 <Route loginAnonymous={true} loggedIn={true} path={"/pairwise-comparison"}
                        component={PairwiseComparison}/>
                 <Route loginAnonymous={true} loggedIn={true} path={"/swot-analysis"} component={SWOTAnalysis}/>
@@ -112,7 +114,7 @@ export function App() {
             <>
                 <Messages xAlignment={"CENTER"} yAlignment={"BOTTOM"} style={{marginBottom: 65}}>
                     <GlobalContexts key={"global-contexts"}>
-                        <Loader key={"loader"} animate fullscreen loaded={true} variant={"style"} payload={[]}>
+                        <Loader key={"loader"} animate fullscreen loaded={true} variant={"style"}>
                             <BrowserRouter>
                                 <LegacyErrorPageAdapter/>
                                 <Nav/>

@@ -15,6 +15,7 @@ function ConfirmToolRouteChangeModal(props: ConfirmToolRouteChangeModalProps) {
             show={props.show}
             backdrop="static"
             animate={Fade}
+            onHide={props.onNo}
             keyboard
         >
             <Modal.Header>

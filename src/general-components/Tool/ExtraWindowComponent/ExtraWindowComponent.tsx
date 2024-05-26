@@ -2,7 +2,7 @@ import {Component} from "react";
 import {StepController} from "../SteppableTool/StepComponent/StepComponent";
 import "./extra-window-component.scss";
 import {SteppableTool} from "../SteppableTool/SteppableTool";
-import {ResourceManager} from "../ToolSavePage/ToolSavePage";
+import {IResourceManager} from "../ToolSavePage/ResourceManager";
 
 
 export interface ExtraWindowProps<D extends object> {
@@ -21,7 +21,7 @@ export interface ExtraWindowProps<D extends object> {
     /**
      * Verwaltet die Resourcen
      */
-    resourceManager: ResourceManager
+    resourceManager: IResourceManager
 }
 
 /**

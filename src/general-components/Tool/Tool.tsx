@@ -1,4 +1,4 @@
-import React, {Component, ReactNode, RefObject} from "react";
+import React, {Component, ReactElement, ReactNode, RefObject} from "react";
 import {RouteComponentProps, withRouter} from "react-router";
 import {Route, Switch} from "react-router-dom";
 import {IconDefinition} from "@fortawesome/fontawesome-svg-core";
@@ -126,8 +126,7 @@ abstract class Tool<D extends object> extends Component<RouteComponentProps<{}>,
                     <Route
                         exact
                         render={(routeProps) => {
-                            return <ToolSavePage tool={this} history={routeProps.history} location={routeProps.location}
-                                                 match={routeProps.match} element={this.buildSaveBuilder.bind(this)}/>
+                            return <ToolSavePage tool={this} element={this.buildSaveBuilder.bind(this)}/>
                         }}
                         path={this.viewPath}/>
                 </Switch>
@@ -147,7 +146,7 @@ abstract class Tool<D extends object> extends Component<RouteComponentProps<{}>,
 
     protected abstract renderShortDescription(): ReactNode;
 
-    protected abstract buildSaveBuilder(saveProps: ToolSaveProps<D>): JSX.Element
+    protected abstract buildSaveBuilder(saveProps: ToolSaveProps<D>): ReactElement
 
     protected abstract renderTutorial(): ReactNode;
 

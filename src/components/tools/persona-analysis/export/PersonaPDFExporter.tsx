@@ -4,7 +4,7 @@ import {SaveResource} from "../../../../general-components/Datastructures";
 import {SingleMessageProps} from "../../../../general-components/Messages/Messages";
 import jsPDF from "jspdf";
 import {Buffer} from 'buffer';
-import {ResourcesType} from "../../../../general-components/Tool/ToolSavePage/ToolSavePage";
+import {ResourcesType} from "../../../../general-components/Tool/ToolSavePage/ResourceManager";
 import {PersonaPersonalityComponent} from "../steps/PersonaPersonality/PersonaPersonalityComponent";
 import {PersonaSummaryItem} from "../steps/PersonaSummary/PersonaSummaryComponent";
 
@@ -41,20 +41,19 @@ class PersonaPDFExporter extends PDFExporter<PersonaAnalysisValues> {
 
         // Personalität
         let items: PersonaSummaryItem[] = [
-            ...Object.values(personality.fields).map<PersonaSummaryItem>((data, index) => {
+            ...Object.entries(personality.fields).map<PersonaSummaryItem>(([name, data]) => {
                 return {
-                    name: PersonaPersonalityComponent.names[index],
+                    name: PersonaPersonalityComponent.names[name],
                     fields: data,
-                    icon: PersonaPersonalityComponent.icons[index]
+                    icon: PersonaPersonalityComponent.icons[name]
                 };
             }),
             ...personality.individual,
-            ...Object.values(personality.fieldsElse).map<PersonaSummaryItem>((data, index) => {
-                let l = Object.keys(personality.fields).length;
+            ...Object.entries(personality.fieldsElse).map<PersonaSummaryItem>(([name, data]) => {
                 return {
-                    name: PersonaPersonalityComponent.names[l + index],
+                    name: PersonaPersonalityComponent.names[name],
                     fields: data,
-                    icon: PersonaPersonalityComponent.icons[l + index]
+                    icon: PersonaPersonalityComponent.icons[name]
                 };
             })
         ];

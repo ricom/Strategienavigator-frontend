@@ -6,7 +6,7 @@ import {
 import {PersonaAnalysisValues} from "../../PersonaAnalysis";
 import {UIErrorBanner} from "../../../../../general-components/Error/UIErrors/UIErrorBannerComponent/UIErrorBanner";
 import {Col, Form, Image, Row} from "react-bootstrap";
-import {ChangeEvent} from "react";
+import {ChangeEvent, ReactElement} from "react";
 import {PersonaInfo} from "./PersonaInfo";
 
 export interface PersonaInfoValues {
@@ -35,7 +35,7 @@ export class PersonaInfoComponent extends Step<PersonaAnalysisValues, {}> {
         return shouldUpdate;
     }
 
-    build(): JSX.Element {
+    build(): ReactElement {
         let data = this.props.save.data["persona-info"];
         return (
             <>
@@ -44,7 +44,7 @@ export class PersonaInfoComponent extends Step<PersonaAnalysisValues, {}> {
                         <Form.Group className="mb-3">
                             <Form.Label>Vorname</Form.Label>
                             <Form.Control disabled={this.props.disabled} required onChange={this.firstNameChanged}
-                                          type={"text"}
+                                          type={"text"} name={"name"}
                                           value={data?.firstname ?? ""} placeholder={"Max"}/>
                             <UIErrorBanner id={"firstname.empty"}/>
                             <UIErrorBanner id={"firstname.toolong"}/>
@@ -55,6 +55,7 @@ export class PersonaInfoComponent extends Step<PersonaAnalysisValues, {}> {
                             <Form.Label>Alter</Form.Label>
                             <Form.Control disabled={this.props.disabled} onChange={this.ageChanged} type={"number"}
                                           value={data?.age === -1 ? undefined : data?.age ?? ""}
+                                          name={"age"}
                                           min={PersonaInfo.AGE_MIN} max={PersonaInfo.AGE_MAX}
                                           placeholder={"25"}/>
                             <UIErrorBanner id={"age.invalid"}/>
@@ -64,7 +65,8 @@ export class PersonaInfoComponent extends Step<PersonaAnalysisValues, {}> {
 
                 <Form.Group className="mb-3">
                     <Form.Label>Avatar/Personenfoto</Form.Label>
-                    <Form.Control disabled={this.props.disabled} type="file" onChange={this.avatarChanged}/>
+                    <Form.Control disabled={this.props.disabled} type="file" name={"picture"}
+                                  onChange={this.avatarChanged}/>
                     <Form.Text>Gültige
                         Dateitypen: {PersonaInfoComponent.FILETYPES.map(i => "." + i).join(", ")}</Form.Text>
                     <br/>
@@ -76,10 +78,13 @@ export class PersonaInfoComponent extends Step<PersonaAnalysisValues, {}> {
                 </Form.Group>
 
                 <div className={"avatar-preview"}>
-                    <Image
-                        src={this.props.resourceManager.getBlobURL("avatar") ?? undefined}
-                        thumbnail rounded
-                        className={"avatar"} alt={"Avatar Vorschau"}/>
+                    {this.props.resourceManager.hasResource("avatar") ?
+                        (<Image
+                            src={this.props.resourceManager.getBlobURL("avatar") ?? undefined}
+                            thumbnail rounded
+                            className={"avatar"} alt={"Avatar Vorschau"}/>)
+                        : (<p>Kein Bild ausgewählt</p>)}
+
                 </div>
             </>
         );

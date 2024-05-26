@@ -1,0 +1,19 @@
+{
+  "persona-info": {
+    "age": 12,
+    "firstname": "Testname"
+  },
+  "persona-personality": {
+    "fields": {
+      "demograph": [],
+      "pains": [],
+      "gains": []
+    },
+    "individual": [],
+    "fieldsElse": {
+      "statements": [],
+      "motives": [],
+      "keywords": []
+    }
+  }
+}

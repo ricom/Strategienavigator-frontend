@@ -55,14 +55,14 @@ export class SettingsList {
      * @param settingId
      */
     public getSetting(settingId: number) {
-        return this.idDict[settingId];
+        return this.idDict[settingId] ?? {value: undefined, exists: false};
     }
 
     /**
      * Gibt die Einstellung zurück welche den übergeben Namen besitzt
      */
     public getSettingByName(settingName: string) {
-        return this.nameDict[settingName];
+        return this.nameDict[settingName]?? {value: undefined, exists: false};
     }
 
     /**

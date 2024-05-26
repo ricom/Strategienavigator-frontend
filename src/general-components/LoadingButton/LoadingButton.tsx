@@ -82,7 +82,7 @@ export class LoadingButton extends Component<LoadingButtonProps, {}> {
                 ) : (
 
                     showIcons ? (
-                            <Loader payload={[]} variant={loaderVariant ?? "light"}
+                            <Loader variant={loaderVariant ?? "light"}
                                     text={<span>&nbsp;{savingChild}</span>}
                                     transparent size={20} loaded={false}/>)
                         : savingChild

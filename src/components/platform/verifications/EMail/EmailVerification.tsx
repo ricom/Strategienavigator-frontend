@@ -1,6 +1,6 @@
-import React, {Component} from "react";
+import React, {useEffect, useState} from "react";
 import {faCheck} from "@fortawesome/free-solid-svg-icons";
-import {RouteComponentProps} from "react-router";
+import {useParams} from "react-router";
 import {verifyEmail} from "../../../../general-components/API/calls/Email";
 import {faTimes} from "@fortawesome/free-solid-svg-icons/";
 import {Loader} from "../../../../general-components/Loader/Loader";
@@ -21,60 +21,58 @@ export interface RouteMatches {
     token: string
 }
 
-export class EmailVerification extends Component<RouteComponentProps<RouteMatches>, EmailVerificationState> {
-    private readonly token: string;
+export function EmailVerification() {
+    // State
 
-    constructor(props: Readonly<RouteComponentProps<RouteMatches>> | RouteComponentProps<RouteMatches>) {
-        super(props);
+    const [loaded, setLoaded] = useState(false);
+    const [success, setSuccess] = useState(false);
+    const [email, setEmail] = useState<string | undefined>(undefined);
 
-        this.token = this.props.match.params.token;
+    // context
+    const {token} = useParams<{ token: string }>();
 
-        this.state = {
-            loaded: false
-        };
-    }
-
-    componentDidMount = async () => {
-        let call = await verifyEmail(this.token);
-
-        if (call) {
-            this.setState({
-                loaded: true,
-                success: call.success,
-                email: call.success ? call.callData.email : undefined
-            });
+    useEffect(() => {
+        let canceled = false;
+        verifyEmail(token).then((call) => {
+            if (call && !canceled) {
+                setLoaded(true);
+                setSuccess(call.success);
+                setEmail(call.success ? call.callData.email : undefined);
+            }
+        }, (reason) => {
+            console.error(reason);
+        });
+        return () => {
+            canceled = true;
         }
-    }
+    }, [setSuccess, setEmail, setLoaded, token]);
 
-    render() {
-        return (
-            <div className="emailVerification">
-                {(!this.state.loaded) ? (
+    return (
+        <div className="emailVerification">
+            {(!loaded) ? (
+                <>
+                    <Loader loaded={false} size={100} animate={false} transparent/>
+                </>
+            ) : (
+                (success) ? (
                     <>
-                        <Loader payload={[]} loaded={false} size={100} animate={false} transparent/>
+                        <FAE icon={faCheck}/>
+                        <h4>Ihre E-Mail wurde erfolgreich verifiziert!</h4>
+
+                        <Link to={"/login" + ((email) ? (`?email=${email}`) : "")}>
+                            <Button variant="dark">
+                                Jetzt Anmelden
+                            </Button>
+                        </Link>
                     </>
                 ) : (
-                    (this.state.success) ? (
-                        <>
-                            <FAE icon={faCheck}/>
-                            <h4>Ihre E-Mail wurde erfolgreich verifiziert!</h4>
+                    <>
+                        <FAE icon={faTimes}/>
+                        <h4>Die Verifikation Ihrer E-Mail Adresse ist fehlgeschlagen!</h4>
+                    </>
+                )
+            )}
 
-                            <Link to={"/login" + ((this.state.email) ? (`?email=${this.state.email}`) : "")}>
-                                <Button variant="dark">
-                                    Jetzt Anmelden
-                                </Button>
-                            </Link>
-                        </>
-                    ) : (
-                        <>
-                            <FAE icon={faTimes}/>
-                            <h4>Die Verifikation Ihrer E-Mail Adresse ist fehlgeschlagen!</h4>
-                        </>
-                    )
-                )}
-
-            </div>
-        );
-    }
-
+        </div>
+    );
 }

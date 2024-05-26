@@ -12,6 +12,7 @@
 // This function is called when a project is opened or re-opened (e.g. due to
 // the project's config changing)
 const ms = require('smtp-tester');
+const crypto = require("crypto");
 /**
  * @type {Cypress.PluginConfig}
  */
@@ -19,10 +20,9 @@ const ms = require('smtp-tester');
 module.exports = (on, config) => {
     // `on` is used to hook into various events Cypress emits
     // `config` is the resolved Cypress config
-    
+
     // Usage: cy.task('queryDb', query)
-    
-    
+
     if (config.testingType === 'component') {
         require('@cypress/react/plugins/react-scripts')(on, config)
     } else {
@@ -30,14 +30,14 @@ module.exports = (on, config) => {
         const port = config.env["SMTP_PORT"];
         const mailServer = ms.init(port)
         console.log('mail server at port %d', port)
-        
+
         // process all emails
         mailServer.bind((addr, id, email) => {
             console.log('--- email ---')
             console.log(addr, id, email)
         })
-        
-        
+
+
         const options = {
             outputRoot: 'cypress/',
             outputTarget: {
@@ -46,15 +46,16 @@ module.exports = (on, config) => {
             },
             printLogsToFile: 'always'
         };
-        
+
         require('cypress-terminal-report/src/installLogsPrinter')(on, options);
-        
-        
+
+
         const mysql = require("mysql2");
         const bcrypt = require('bcrypt');
-        
-        function queryTestDb(query, config) {
-            // creates a new mysql connection using credentials from cypress.json env's
+        const crypto = require('crypto');
+        const fs = require('node:fs/promises');
+
+        function getConnection(config) {
             const connection = mysql.createConnection({
                 "host": config.env.DB_HOST,
                 "user": config.env.DB_USER,
@@ -63,6 +64,12 @@ module.exports = (on, config) => {
             });
             // start connection to db
             connection.connect();
+            return connection;
+        }
+
+        function queryTestDb(query, config) {
+            // creates a new mysql connection using credentials from cypress.json env's
+            const connection = getConnection(config)
             // exec query + disconnect to db as a Promise
             return new Promise((resolve, reject) => {
                 connection.query(query, (error, results) => {
@@ -75,10 +82,47 @@ module.exports = (on, config) => {
                 });
             });
         }
-        
+
+        async function insertResource(saveId, path, name, type, config) {
+
+            // read file
+            const data = await fs.readFile(path);
+            let hashFunction = crypto.createHash("sha256");
+            hashFunction.update(data);
+            let hash = hashFunction.digest('hex');
+
+
+            const query = `INSERT INTO \`${config.env.DB_NAME}\`.save_resources
+                                    (save_id, file_name, file_type,contents ,contents_hash,hash_function,created_at, updated_at)
+                                    VALUES
+                                    (?,?,?,?,?,
+                                    "sha256",
+                                    CURRENT_TIMESTAMP,
+                                    CURRENT_TIMESTAMP);`;
+            // creates a new mysql connection using credentials from cypress.json env's
+            const connection = getConnection(config);
+
+            return await new Promise((resolve, reject) => {
+                connection.query(query, [saveId, name, type, data,hash], (error, results) => {
+                    if (error) reject(error);
+                    else {
+                        connection.end();
+                        // console.log(results)
+                        return resolve(results);
+                    }
+                });
+            });
+
+        }
+
         on("task", {
             queryDb: query => {
                 return queryTestDb(query, config);
+            }
+        });
+        on("task", {
+            insertResource: ({saveId, name, type, path}) => {
+                return insertResource(saveId, path, name, type, config);
             }
         });
         on("task", {
@@ -90,7 +134,7 @@ module.exports = (on, config) => {
             }
         });
     }
-    
+
     return config;
 }
 

@@ -2,7 +2,7 @@ import {Exporter} from "../Exporter";
 import {SaveResource} from "../../Datastructures";
 import jsPDF from "jspdf";
 import {Tools} from "../../../components/platform/home/Home";
-import {ResourcesType} from "../../Tool/ToolSavePage/ToolSavePage";
+import {ResourcesType} from "../../Tool/ToolSavePage/ResourceManager";
 
 export interface PDFMargins {
     top: number

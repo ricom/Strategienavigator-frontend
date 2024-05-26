@@ -78,7 +78,7 @@ export function Nav() {
     const {
         state: expanded,
         setFalse: shrinkCallback,
-        toggle: toggleExpaned
+        toggle: toggleExpanded
     } = useBooleanState(false);
     const [showSearchOutput, setShowSearchOutput] = useState(false);
     const [searchResult, setSearchResult] = useState<SimpleSaveResource[]>([]);
@@ -108,6 +108,9 @@ export function Nav() {
     }, [setSearchPrompt]);
 
     useEffect(() => {
+        if (!user || searchPrompt === "") {
+            return;
+        }
         let canceled = false;
         const timeout = setTimeout(() => {
             setSearchLoading(true);
@@ -150,7 +153,7 @@ export function Nav() {
 
     return (
         <>
-            <Navbar onToggle={toggleExpaned} expanded={expanded} expand="lg">
+            <Navbar onToggle={toggleExpanded} expanded={expanded} expand="lg">
                 <Container>
                     <Navbar.Brand onClick={shrinkCallback} as={NavLink} to={"/"} exact className={"nav-link"}>
 
@@ -194,7 +197,7 @@ export function Nav() {
                                             Ergebnisse
                                         </div>
                                         <div className={"output"}>
-                                            <Loader payload={[]} variant={"style"}
+                                            <Loader variant={"style"}
                                                     loaded={!searchLoading}
                                                     transparent
                                                     size={100} alignment={"center"}>

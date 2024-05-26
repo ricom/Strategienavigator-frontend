@@ -7,7 +7,7 @@ import {UIError} from "../../../../../general-components/Error/UIErrors/UIError"
 import React from "react";
 import {PersonaInfoComponent} from "./PersonaInfoComponent";
 import {PersonaAnalysisValues} from "../../PersonaAnalysis";
-import {ResourcesType} from "../../../../../general-components/Tool/ToolSavePage/ToolSavePage";
+import {ResourcesType} from "../../../../../general-components/Tool/ToolSavePage/ResourceManager";
 import {validateFile} from "../../../../../general-components/Tool/Resources";
 
 

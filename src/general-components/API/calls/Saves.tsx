@@ -1,7 +1,8 @@
 import {APIArgs, callAPI} from "../API";
 import {ImportJSONData, PaginationResource, SaveResource, SimpleSaveResource} from "../../Datastructures";
 import {Patch} from "immer";
-import {ResourcesType} from "../../Tool/ToolSavePage/ToolSavePage";
+import {ResourcesType} from "../../Tool/ToolSavePage/ResourceManager";
+import {Session} from "../../Session/Session";
 
 
 export interface GetSavesArguments {
@@ -186,6 +187,29 @@ const lockSave = async (saveID: number, lock: boolean, apiArgs?: APIArgs) => {
     return await callAPI("api/saves/" + saveID, "POST", data, true, apiArgs);
 }
 
+/**
+ * Checks if a lock request would succeed.
+ * @param save the save to check
+ * @param user the current user.
+ * @param lock
+ * @param keepalive
+ */
+async function lockSaveWithCheck(save: SaveResource<any>, lock: boolean, keepalive?: boolean) {
+    if (lock && save.locked_by !== null) {
+        return;
+    }
+    if (!lock && save.locked_by !== Session.currentUser?.getID()) {
+        return;
+    }
+
+    return await lockSave(save.id, lock, {
+        errorCallback: (reason) => {
+            throw reason
+        },
+        keepalive: keepalive
+    });
+}
+
 
 /**
  * Erstellt einen neuen Save
@@ -239,5 +263,6 @@ export {
     updateSave,
     broadcastSavePatches,
     lockSave,
-    createSave
+    createSave,
+    lockSaveWithCheck
 }

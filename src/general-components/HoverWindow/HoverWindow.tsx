@@ -1,9 +1,8 @@
 import {ComponentClass, createElement, FunctionComponent, memo, ReactElement} from "react";
-import {OverlayTrigger} from "react-bootstrap";
+import {OverlayTrigger, Popover} from "react-bootstrap";
 import {OverlayTriggerType} from "react-bootstrap/OverlayTrigger";
 import {OverlayInjectedProps} from "react-bootstrap/Overlay";
 import {Placement} from "react-bootstrap/types";
-import {HoverSimplePopover} from "./HoverSimplePopover";
 
 
 interface HoverWindowCustomPopupProps {
@@ -68,7 +67,14 @@ const HoverWindow = memo(function HoverWindow(componentProps: HoverWindowProps) 
 
 
     const popover = popupFunction ?? (
-        <HoverSimplePopover title={customProps.title} description={customProps.description}/>
+        <Popover id="popover-basic">
+            {customProps.title !== undefined ? (
+                <Popover.Header as="h3">{customProps.title}</Popover.Header>) : undefined}
+            {customProps.description !== undefined ? (
+                <Popover.Body>
+                    {customProps.description}
+                </Popover.Body>) : undefined}
+        </Popover>
     );
     return (
         <OverlayTrigger trigger={trigger} overlay={popover}
