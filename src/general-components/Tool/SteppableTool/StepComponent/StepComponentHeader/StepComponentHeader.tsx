@@ -1,5 +1,4 @@
 import React, {PureComponent} from "react";
-import {Tool} from "../../../Tool";
 import {Button, Collapse, Form} from "react-bootstrap";
 
 import "./step-header.scss";

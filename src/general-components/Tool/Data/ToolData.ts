@@ -116,7 +116,7 @@ export abstract class ToolData<D extends object> {
 
     protected abstract buildSaveBuilder(saveProps: ToolSaveProps<D>): JSX.Element
 
-    protected abstract renderTutorial(): ReactNode;
+    public abstract renderTutorial(): ReactNode;
 
 
 }

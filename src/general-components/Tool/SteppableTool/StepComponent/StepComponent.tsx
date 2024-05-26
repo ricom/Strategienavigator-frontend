@@ -207,7 +207,7 @@ class StepComponent<D extends object> extends Component<StepComponentProps<D> & 
      *
      * @param steps
      * @param step
-     * @param save
+     * @param data
      * @private the index of the sub step
      */
     private static getCurrentSubStepOfStep<D extends object>(steps: Array<StepDefinition<D>>, step: number, data: D) {

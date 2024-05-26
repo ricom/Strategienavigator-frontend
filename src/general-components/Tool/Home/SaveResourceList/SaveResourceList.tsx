@@ -1,16 +1,16 @@
 import './save-resource-list.scss'
 import React from "react";
-import {Tool} from "../../Tool";
 import {SavePagination} from "./SavePagination/SavePagination";
 import {SaveInfinityScroll} from "./SaveInfinityScroll/SaveInfinityScroll";
 import {PaginationPages} from "../../../API/PaginationLoader";
 import {SimpleSaveResource} from "../../../Datastructures";
 import {SavesControlCallbacks, SavesPaginationSetting} from "../ToolHome";
 import {useIsDesktop} from "../../../Contexts/DesktopContext";
+import {ToolData} from "../../Data/ToolData";
 
 
 interface SaveResourceListProps {
-    tool: Tool<any>
+    tool: ToolData<any>
     /**
      * Alle Speicherstände und zugehörige Metadaten der Pagination
      */
