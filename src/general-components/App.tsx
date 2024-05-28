@@ -1,8 +1,8 @@
 import {SettingsContextComponent} from "./Contexts/SettingsContextComponent";
 import {DarkModeChanger} from "./Darkmode/Darkmode";
 import React, {useEffect} from "react";
-import {BrowserRouter, Switch} from "react-router-dom";
-import {ProtectedRoute as Route} from "./ProtectedRoute";
+import {BrowserRouter, Route, Switch} from "react-router-dom";
+import {ProtectedRoute} from "./ProtectedRoute";
 import {Home} from "../components/platform/home/Home";
 import {Imprint} from "../components/platform/imprint/Imprint";
 import {DataPrivacy} from "../components/platform/data-privacy/DataPrivacy";
@@ -55,36 +55,77 @@ export function App() {
                 <Route path={"/legal-notice"} exact><Imprint/></Route>
                 <Route path={"/data-privacy"} exact><DataPrivacy/></Route>
                 <Route path={"/about-us"} exact><AboutUs/></Route>
-                <Route loggedIn={false} path={"/login"} exact><Login/></Route>
-                <Route loggedIn={undefined} path={"/logout"} exact><Logout/></Route>
-                <Route loggedIn={false} path={"/register"} exact><Register/></Route>
-                <Route loggedIn={true} path={"/settings"} exact><Settings/></Route>
-                <Route loggedIn={true} anonymous={false} path={"/my-profile"} exact><MyProfile/></Route>
-
-                <Route loggedIn={true} path={"/invite/:sharedSaveID"}><ContributionDecision/></Route>
-                <Route loggedIn={true} path={"/invitation/:token"}><InvitationDecision/></Route>
+                <Route path={"/login"} exact>
+                    <ProtectedRoute loggedIn={false}>
+                        <Login/>
+                    </ProtectedRoute>
+                </Route>
+                <Route path={"/logout"} exact>
+                    <ProtectedRoute loggedIn={undefined}>
+                        <Logout/>
+                    </ProtectedRoute>
+                </Route>
+                <Route path={"/register"} exact>
+                    <ProtectedRoute loggedIn={false}>
+                        <Register/>
+                    </ProtectedRoute>
+                </Route>
+                <Route path={"/settings"} exact>
+                    <ProtectedRoute loggedIn={true}>
+                        <Settings/>
+                    </ProtectedRoute>
+                </Route>
+                <Route path={"/my-profile"} exact>
+                    <ProtectedRoute loggedIn={true} anonymous={false}>
+                        <MyProfile/>
+                    </ProtectedRoute>
+                </Route>
+                <Route path={"/invite/:sharedSaveID"}>
+                    <ProtectedRoute loggedIn={true}>
+                        <ContributionDecision/>
+                    </ProtectedRoute>
+                </Route>
+                <Route path={"/invitation/:token"}>
+                    <ProtectedRoute loggedIn={true}>
+                        <InvitationDecision/>
+                    </ProtectedRoute>
+                </Route>
 
                 <Route path={"/verify-email/:token"}><EmailVerification/></Route>
                 <Route path={"/reset-password/:token"}><PasswordReset/></Route>
                 <Route path={"/reset-password"} exact><PasswordResetRequest/></Route>
 
-                <Route loginAnonymous={true} loggedIn={true} path={"/pairwise-comparison"}>
-                    <Tool tool={new PairwiseComparison()}/>
+                <Route path={"/pairwise-comparison"}>
+                    <ProtectedRoute loginAnonymous={true} loggedIn={true}>
+                        <Tool tool={new PairwiseComparison()}/>
+                    </ProtectedRoute>
                 </Route>
-                <Route loginAnonymous={true} loggedIn={true} path={"/swot-analysis"}>
-                    <Tool tool={new SWOTAnalysis()}/></Route>
-                <Route loginAnonymous={true} loggedIn={true} path={"/persona-analysis"}>
-                    <Tool tool={new PersonaAnalysis()}/></Route>
-                <Route loginAnonymous={true} loggedIn={true} path={"/portfolio-analysis"}>
-                    <Tool tool={new PortfolioAnalysis()}/>
+                <Route path={"/swot-analysis"}>
+                    <ProtectedRoute loginAnonymous={true} loggedIn={true}>
+                        <Tool tool={new SWOTAnalysis()}/>
+                    </ProtectedRoute>
                 </Route>
-                <Route loginAnonymous={true} loggedIn={true} path={"/utility-analysis"}>
-                    <Tool tool={new UtilityAnalysis()}/>
+                <Route path={"/persona-analysis"}>
+                    <ProtectedRoute loginAnonymous={true} loggedIn={true}>
+                        <Tool tool={new PersonaAnalysis()}/>
+                    </ProtectedRoute>
+                </Route>
+                <Route path={"/portfolio-analysis"}>
+                    <ProtectedRoute loginAnonymous={true} loggedIn={true}>
+                        <Tool tool={new PortfolioAnalysis()}/>
+                    </ProtectedRoute>
+                </Route>
+                <Route path={"/utility-analysis"}>
+                    <ProtectedRoute loginAnonymous={true} loggedIn={true}>
+                        <Tool tool={new UtilityAnalysis()}/>
+                    </ProtectedRoute>
                 </Route>
 
                 {/* DEV  */(process.env.NODE_ENV === "development") && (
-                    <Route loginAnonymous={true} loggedIn={true} path={"/test-analysis"}>
-                        <Tool tool={new TestAnalysis()}/>
+                    <Route path={"/test-analysis"}>
+                        <ProtectedRoute loginAnonymous={true} loggedIn={true}>
+                            <Tool tool={new TestAnalysis()}/>
+                        </ProtectedRoute>
                     </Route>
                 )}
 
