@@ -8,7 +8,7 @@ import {CustomNextButton} from "../StepComponent";
 import {ExportButton} from "../../../ExportButton";
 import FAE from "../../../../Icons/FAE";
 import {ButtonItem, NextStepItem} from "../../../../ControlFooter/ControlFooter";
-import {FooterContext} from "../../../../Contexts/FooterContextComponent";
+import {FooterControllerContext} from "../../../../Contexts/FooterContextComponent";
 import {ISharedSaveContext} from "../../../../Contexts/SharedSaveContextComponent";
 import {ButtonPanel} from "../../../../ButtonPanel/ButtonPanel";
 import {hasPermission, ResetSavePermission, SaveSavePermission} from "../../../../Permissions";
@@ -36,8 +36,8 @@ export class StepComponentButtons extends PureComponent<DesktopButtonsProps, Des
     /**
      * Definiert auf welchen Context zugegriffen werden soll
      */
-    static contextType = FooterContext;
-    context!: React.ContextType<typeof FooterContext>
+    static contextType = FooterControllerContext;
+    context!: React.ContextType<typeof FooterControllerContext>
 
     componentDidMount() {
         this.setFooterButtons();

@@ -4,7 +4,7 @@ import {faFileImport, faInfoCircle, faSortAmountDown, faSortAmountUp} from "@for
 import {faPlusSquare} from "@fortawesome/free-solid-svg-icons/faPlusSquare";
 
 import "./tool-home.scss";
-import {useFooterContext} from "../../Contexts/FooterContextComponent";
+import {useFooterControllerContext} from "../../Contexts/FooterContextComponent";
 import {SaveResourceList} from "./SaveResourceList/SaveResourceList";
 import {PaginationLoader, PaginationPages} from "../../API/PaginationLoader";
 import {SimpleSaveResource} from "../../Datastructures";
@@ -69,7 +69,7 @@ export function ToolHome({
     }, [orderDesc]);
 
     //CONTEXT
-    const footerContext = useFooterContext();
+    const footerContext = useFooterControllerContext();
     const isDesktop = useIsDesktop();
     const history = useHistory();
     const {user} = useUserContext();
@@ -148,7 +148,7 @@ export function ToolHome({
         return () => {
             footerContext.clearItems();
         }
-    }, [footerContext.setItem, footerContext.clearItems, navigateToNewTool, tool, showImportModalCallback]);
+    }, [footerContext, navigateToNewTool, tool, showImportModalCallback]);
 
     useEffect(() => {
         let canceled = false;
