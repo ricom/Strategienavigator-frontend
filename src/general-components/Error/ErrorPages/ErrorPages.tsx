@@ -1,5 +1,5 @@
-import {Component, ReactElement} from "react";
-import {RouteComponentProps, StaticContext} from "react-router";
+import {ReactElement} from "react";
+import {useHistory, useParams} from "react-router";
 import {Forbidden} from "./forbidden/Fordidden";
 
 import "./error-pages.scss";
@@ -18,59 +18,54 @@ export type ErrorComponentTypes =
     | ReactElement<ErrorPage>
     | ReactElement<APINotReachable>;
 
-class ErrorPages extends Component<RouteComponentProps<{ code: string }>, any> {
-    private code: number;
-
-    constructor(props: RouteComponentProps<{ code: string; }, StaticContext, unknown> | Readonly<RouteComponentProps<{
-        code: string;
-    }, StaticContext, unknown>>) {
-        super(props);
-        this.code = parseInt(this.props.match.params.code);
-    }
-
-    getErrorComponent = (): ErrorComponentTypes | undefined => {
-        if (this.code === 500) {
-            return <APINotReachable/>;
-        } else if (this.code === 404) {
-            return <NotFound/>;
-        } else if (this.code === 403) {
-            return <Forbidden/>;
-        }
-        this.code = 404;
+function getErrorComponent(code:number): ErrorComponentTypes | undefined {
+    if (code === 500) {
+        return <APINotReachable/>;
+    } else if (code === 404) {
         return <NotFound/>;
+    } else if (code === 403) {
+        return <Forbidden/>;
     }
-
-    render() {
-        let component = this.getErrorComponent();
-
-        return (
-            <div className={"errorpage"}>
-                <h1 className={"header"}>Fehler <b>{this.code}</b></h1>
-
-                <div className={"error"}>
-                    {component}
-                </div>
-
-                {(this.code === 500) && (
-                    <Button className="button" style={{marginRight: "0.75rem"}} onClick={this.props.history.goBack}
-                            variant={"dark"}>
-                        Erneut versuchen &nbsp;
-                        <FAE icon={faRedo}/>
-                    </Button>
-                )}
-
-                <Link to="/">
-                    <Button className="button" variant={"dark"}>
-                        Startseite &nbsp;
-                        <FAE icon={faHome}/>
-                    </Button>
-                </Link>
-            </div>
-        );
-    }
-
+    code = 404;
+    return <NotFound/>;
 }
 
-export {
-    ErrorPages
+export function ErrorPages() {
+    let {codeString} = useParams() as { codeString: string|undefined };
+    let code;
+    if(codeString === undefined){
+        code = 404;
+    }else{
+        code = parseInt(codeString);
+    }
+
+    const history = useHistory();
+
+    let component = getErrorComponent(code);
+
+    return (
+        <div className={"errorpage"}>
+            <h1 className={"header"}>Fehler <b>{code}</b></h1>
+
+            <div className={"error"}>
+                {component}
+            </div>
+
+            {(code === 500) && (
+                <Button className="button" style={{marginRight: "0.75rem"}} onClick={history.goBack}
+                        variant={"dark"}>
+                    Erneut versuchen &nbsp;
+                    <FAE icon={faRedo}/>
+                </Button>
+            )}
+
+            <Link to="/">
+                <Button className="button" variant={"dark"}>
+                    Startseite &nbsp;
+                    <FAE icon={faHome}/>
+                </Button>
+            </Link>
+        </div>
+    );
+
 }

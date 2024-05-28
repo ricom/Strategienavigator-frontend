@@ -88,25 +88,9 @@ export function App() {
                     </Route>
                 )}
 
+                <Route path={"/error/:code"}><ErrorPages/></Route>
+                <Route><ErrorPages/></Route>
 
-                (//TODO remove all usages of component and render props. (Only use children))
-
-                <Route path={"/error/:code"} component={ErrorPages}/>
-
-                <Route render={(props) => {
-                    let match = Object.assign(
-                        props.match, {
-                            params: {
-                                code: String(404)
-                            }
-                        }
-                    );
-                    return <ErrorPages
-                        history={props.history}
-                        location={props.location}
-                        match={match}
-                    />;
-                }}/>
             </Switch>
         );
     }
