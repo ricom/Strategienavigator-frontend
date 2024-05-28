@@ -1,8 +1,8 @@
 import {SettingsContextComponent} from "./Contexts/SettingsContextComponent";
 import {DarkModeChanger} from "./Darkmode/Darkmode";
 import React, {useEffect} from "react";
-import {BrowserRouter, Switch} from "react-router-dom";
-import {ProtectedRoute as Route} from "./ProtectedRoute";
+import {BrowserRouter, Route, Switch} from "react-router-dom";
+import {ProtectedRoute} from "./ProtectedRoute";
 import {Home} from "../components/platform/home/Home";
 import {Imprint} from "../components/platform/imprint/Imprint";
 import {DataPrivacy} from "../components/platform/data-privacy/DataPrivacy";
@@ -33,6 +33,7 @@ import {Container} from "react-bootstrap";
 import {LegacyErrorPageAdapter} from "./LegacyErrorPageAdapter";
 import {Messages} from "./Messages/Messages";
 import {PasswordResetRequest} from "../components/platform/verifications/PasswordResetRequest/PasswordResetRequest";
+import {Tool} from "./Tool/Tool";
 
 
 export function App() {
@@ -54,48 +55,83 @@ export function App() {
                 <Route path={"/legal-notice"} exact><Imprint/></Route>
                 <Route path={"/data-privacy"} exact><DataPrivacy/></Route>
                 <Route path={"/about-us"} exact><AboutUs/></Route>
-                <Route loggedIn={false} path={"/login"} exact><Login/></Route>
-                <Route loggedIn={undefined} path={"/logout"} exact><Logout/></Route>
-                <Route loggedIn={false} path={"/register"} exact><Register/></Route>
-                <Route loggedIn={true} path={"/settings"} exact><Settings/></Route>
-                <Route loggedIn={true} anonymous={false} path={"/my-profile"} exact><MyProfile/></Route>
-
-                <Route loggedIn={true} path={"/invite/:sharedSaveID"}><ContributionDecision/></Route>
-                <Route loggedIn={true} path={"/invitation/:token"}><InvitationDecision/></Route>
+                <Route path={"/login"} exact>
+                    <ProtectedRoute loggedIn={false}>
+                        <Login/>
+                    </ProtectedRoute>
+                </Route>
+                <Route path={"/logout"} exact>
+                    <ProtectedRoute loggedIn={undefined}>
+                        <Logout/>
+                    </ProtectedRoute>
+                </Route>
+                <Route path={"/register"} exact>
+                    <ProtectedRoute loggedIn={false}>
+                        <Register/>
+                    </ProtectedRoute>
+                </Route>
+                <Route path={"/settings"} exact>
+                    <ProtectedRoute loggedIn={true}>
+                        <Settings/>
+                    </ProtectedRoute>
+                </Route>
+                <Route path={"/my-profile"} exact>
+                    <ProtectedRoute loggedIn={true} anonymous={false}>
+                        <MyProfile/>
+                    </ProtectedRoute>
+                </Route>
+                <Route path={"/invite/:sharedSaveID"}>
+                    <ProtectedRoute loggedIn={true}>
+                        <ContributionDecision/>
+                    </ProtectedRoute>
+                </Route>
+                <Route path={"/invitation/:token"}>
+                    <ProtectedRoute loggedIn={true}>
+                        <InvitationDecision/>
+                    </ProtectedRoute>
+                </Route>
 
                 <Route path={"/verify-email/:token"}><EmailVerification/></Route>
                 <Route path={"/reset-password/:token"}><PasswordReset/></Route>
                 <Route path={"/reset-password"} exact><PasswordResetRequest/></Route>
 
-                (//TODO remove all usages of component and render props. (Only use children))
-                <Route loginAnonymous={true} loggedIn={true} path={"/pairwise-comparison"}
-                       component={PairwiseComparison}/>
-                <Route loginAnonymous={true} loggedIn={true} path={"/swot-analysis"} component={SWOTAnalysis}/>
-                <Route loginAnonymous={true} loggedIn={true} path={"/persona-analysis"} component={PersonaAnalysis}/>
-                <Route loginAnonymous={true} loggedIn={true} path={"/portfolio-analysis"}
-                       component={PortfolioAnalysis}/>
-                <Route loginAnonymous={true} loggedIn={true} path={"/utility-analysis"} component={UtilityAnalysis}/>
+                <Route path={"/pairwise-comparison"}>
+                    <ProtectedRoute loginAnonymous={true} loggedIn={true}>
+                        <Tool tool={new PairwiseComparison()}/>
+                    </ProtectedRoute>
+                </Route>
+                <Route path={"/swot-analysis"}>
+                    <ProtectedRoute loginAnonymous={true} loggedIn={true}>
+                        <Tool tool={new SWOTAnalysis()}/>
+                    </ProtectedRoute>
+                </Route>
+                <Route path={"/persona-analysis"}>
+                    <ProtectedRoute loginAnonymous={true} loggedIn={true}>
+                        <Tool tool={new PersonaAnalysis()}/>
+                    </ProtectedRoute>
+                </Route>
+                <Route path={"/portfolio-analysis"}>
+                    <ProtectedRoute loginAnonymous={true} loggedIn={true}>
+                        <Tool tool={new PortfolioAnalysis()}/>
+                    </ProtectedRoute>
+                </Route>
+                <Route path={"/utility-analysis"}>
+                    <ProtectedRoute loginAnonymous={true} loggedIn={true}>
+                        <Tool tool={new UtilityAnalysis()}/>
+                    </ProtectedRoute>
+                </Route>
 
                 {/* DEV  */(process.env.NODE_ENV === "development") && (
-                    <Route loginAnonymous={true} loggedIn={true} path={"/test-analysis"} component={TestAnalysis}/>
+                    <Route path={"/test-analysis"}>
+                        <ProtectedRoute loginAnonymous={true} loggedIn={true}>
+                            <Tool tool={new TestAnalysis()}/>
+                        </ProtectedRoute>
+                    </Route>
                 )}
 
-                <Route path={"/error/:code"} component={ErrorPages}/>
+                <Route path={"/error/:code"}><ErrorPages/></Route>
+                <Route><ErrorPages/></Route>
 
-                <Route render={(props) => {
-                    let match = Object.assign(
-                        props.match, {
-                            params: {
-                                code: String(404)
-                            }
-                        }
-                    );
-                    return <ErrorPages
-                        history={props.history}
-                        location={props.location}
-                        match={match}
-                    />;
-                }}/>
             </Switch>
         );
     }

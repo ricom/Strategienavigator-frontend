@@ -6,14 +6,13 @@ import {
 } from "./steps/SWOTClassifyAlternativeActions/SWOTClassifyAlternativeActionsComponent";
 
 import "./swot-analysis.scss";
-import {SteppableTool} from "../../../general-components/Tool/SteppableTool/SteppableTool";
 import {JSONExporter} from "../../../general-components/Export/JSONExporter";
 import {SWOTExcelExporter} from "./export/SWOTExcelExporter";
-import {RouteComponentProps} from "react-router";
 import {SWOTFactors} from "./steps/SWOTFactors/SWOTFactors";
 import {SWOTAlternativeActions} from "./steps/SWOTAlternativeActions/SWOTAlternativeActions";
 import {SWOTClassifyAlternativeActions} from "./steps/SWOTClassifyAlternativeActions/SWOTClassifyAlternativeActions";
 import {SWOTJSONImporter} from "./import/SWOTJSONImporter";
+import {SteppableToolData} from "../../../general-components/Tool/Data/SteppableToolData";
 
 
 interface SWOTAnalysisValues {
@@ -22,10 +21,10 @@ interface SWOTAnalysisValues {
     "swot-classify-alternate-actions"?: SWOTClassifyAlternativeActionsValues
 }
 
-class SWOTAnalysis extends SteppableTool<SWOTAnalysisValues> {
+class SWOTAnalysis extends SteppableToolData<SWOTAnalysisValues> {
 
-    constructor(props: RouteComponentProps<{ id: string }>, context: any) {
-        super(props, context, "SWOT Analyse", faThLarge, 2);
+    constructor() {
+        super("SWOT Analyse", faThLarge, 2,"/swot-analysis");
 
         this.addExporter(new JSONExporter());
         this.addExporter(new SWOTExcelExporter());
@@ -37,11 +36,11 @@ class SWOTAnalysis extends SteppableTool<SWOTAnalysisValues> {
         this.addStep(new SWOTClassifyAlternativeActions());
     }
 
-    protected renderShortDescription() {
+    public renderShortDescription() {
         return null;
     }
 
-    protected renderTutorial() {
+    public renderTutorial() {
         return (
             <p>
                 Eine gute SWOT-Analyse kombiniert sowohl <b>interne Einflussfaktoren</b> als auch <b>externe
@@ -59,7 +58,7 @@ class SWOTAnalysis extends SteppableTool<SWOTAnalysisValues> {
         );
     }
 
-    protected getInitData(): SWOTAnalysisValues {
+    public getInitData(): SWOTAnalysisValues {
         let data: SWOTAnalysisValues = {};
         this.getStep(0).dataHandler.fillFromPreviousValues(data);
         return data;

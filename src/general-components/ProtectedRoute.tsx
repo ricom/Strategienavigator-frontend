@@ -1,19 +1,20 @@
-import {Redirect, RouteProps, useHistory, useLocation} from "react-router";
-import {Link, Route} from "react-router-dom";
+import {Redirect, useHistory, useLocation} from "react-router";
+import {Link} from "react-router-dom";
 import {Session} from "./Session/Session";
 import {Button, Modal} from "react-bootstrap";
-import {useState} from "react";
-import {reload_app} from "../index";
+import {ReactNode, useState} from "react";
 import {Loader} from "./Loader/Loader";
 import {faCheckCircle, faExclamationTriangle, faTimesCircle} from "@fortawesome/free-solid-svg-icons";
 import FAE from "./Icons/FAE";
 import {ModalCloseable} from "./Modal/ModalCloseable";
+import {useUserContext} from "./Contexts/UserContextComponent";
 
 
-interface ProtectedRouteProps extends RouteProps {
+interface ProtectedRouteProps {
     loggedIn?: boolean | undefined
     anonymous?: boolean | undefined
     loginAnonymous?: boolean | undefined
+    children?: ReactNode
 }
 
 export function AnonymousModal(props: {
@@ -107,28 +108,26 @@ export function AnonymousModal(props: {
     );
 }
 
-function ProtectedRoute(props: ProtectedRouteProps) {
+function ProtectedRoute({loginAnonymous, anonymous, loggedIn, children}: ProtectedRouteProps) {
     let history = useHistory();
     let location = useLocation();
+    const {user, isLoggedIn} = useUserContext();
 
-    if (props.loggedIn !== undefined) {
-        if (props.loggedIn === Session.isLoggedIn()) {
-            if (props.anonymous !== undefined) {
-                if (props.anonymous !== Session.isAnonymous()) {
+    if (loggedIn !== undefined) {
+        if (loggedIn === isLoggedIn) {
+            if (anonymous !== undefined) {
+                if (anonymous !== user?.isAnonymous()) {
                     return (
                         <Redirect to={"/"}/>
                     );
                 }
             }
-        } else if (props.loggedIn) {
-            if (props.loginAnonymous !== undefined && props.loginAnonymous) {
+        } else if (loggedIn) {
+            if (loginAnonymous !== undefined && loginAnonymous) {
                 const loginAnonymous = async () => {
                     let anonUser = await Session.loginAnonymous();
                     if (anonUser) {
-                        let user = await Session.login(anonUser.username, anonUser.password, true);
-                        if (user) {
-                            reload_app();
-                        }
+                        await Session.login(anonUser.username, anonUser.password, true);
                     }
                 }
                 const redirectUser = async () => {
@@ -149,9 +148,7 @@ function ProtectedRoute(props: ProtectedRouteProps) {
         }
     }
 
-    return (
-        <Route {...props} />
-    );
+    return (<>{children}</>);
 }
 
 export {

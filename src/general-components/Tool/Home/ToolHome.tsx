@@ -1,15 +1,13 @@
-import React, {Component, ReactNode} from "react";
-import {Tool} from "../Tool";
+import React, {ReactNode, useCallback, useEffect, useMemo, useState} from "react";
 import {Badge, Button, Offcanvas, OffcanvasBody, OffcanvasHeader} from "react-bootstrap";
 import {faFileImport, faInfoCircle, faSortAmountDown, faSortAmountUp} from "@fortawesome/free-solid-svg-icons";
 import {faPlusSquare} from "@fortawesome/free-solid-svg-icons/faPlusSquare";
 
 import "./tool-home.scss";
-import {FooterContext} from "../../Contexts/FooterContextComponent";
+import {useFooterControllerContext} from "../../Contexts/FooterContextComponent";
 import {SaveResourceList} from "./SaveResourceList/SaveResourceList";
 import {PaginationLoader, PaginationPages} from "../../API/PaginationLoader";
 import {SimpleSaveResource} from "../../Datastructures";
-import {Session} from "../../Session/Session";
 import {deleteSave, getSaves} from "../../API/calls/Saves";
 import {DeleteSaveModal} from "./DeleteSaveModal/DeleteSaveModal";
 import FAE from "../../Icons/FAE";
@@ -17,8 +15,12 @@ import {SaveInvitation} from "../../Sharing/SaveInvitation";
 import {SharedSaveContextComponent} from "../../Contexts/SharedSaveContextComponent";
 import {ButtonPanel} from "../../ButtonPanel/ButtonPanel";
 import {ImportModal} from "./Import/ImportModal";
-import {MessageContext, Messages} from "../../Messages/Messages";
-import {DesktopContext} from "../../Contexts/DesktopContext";
+import {Messages, useMessageContext} from "../../Messages/Messages";
+import {useIsDesktop} from "../../Contexts/DesktopContext";
+import {ToolData} from "../Data/ToolData";
+import {useBooleanState} from "../../Utility/Hooks";
+import {useHistory} from "react-router";
+import {useUserContext} from "../../Contexts/UserContextComponent";
 
 
 export interface ToolHomeInfo {
@@ -27,24 +29,13 @@ export interface ToolHomeInfo {
 }
 
 export interface ToolHomeProps {
-    tool: Tool<any>
+    tool: ToolData<any>
     info?: ToolHomeInfo,
     children?: ReactNode
 }
 
 export interface SavesPaginationSetting {
     orderDesc: boolean
-}
-
-interface ToolHomeState {
-    showTutorial: boolean
-    saves?: PaginationPages<SimpleSaveResource>
-    paginationSettings: SavesPaginationSetting
-    isLoadingPage: boolean
-    showDeleteModal: boolean
-    showInviteModal: null | SimpleSaveResource
-    deleteSave?: SimpleSaveResource
-    showImportModal: boolean
 }
 
 export interface SavesControlCallbacks {
@@ -55,297 +46,260 @@ export interface SavesControlCallbacks {
     openInviteModal: (save: SimpleSaveResource) => void
 }
 
-class ToolHome extends Component<ToolHomeProps, ToolHomeState> {
+export function ToolHome({
+                             tool,
+                             children
+                         }: ToolHomeProps) {
+    // STATES
+    const {state: showTutorial, setTrue: showTutorialCallback, setFalse: hideTutorialCallback} = useBooleanState(false);
+    const {state: showDeleteModal, setState: setShowDeleteModal} = useBooleanState(false);
+    const {
+        state: showImportModal,
+        setTrue: showImportModalCallback,
+        setFalse: hideImportModalCallback
+    } = useBooleanState(false);
+    const [showInviteModal, setShowInviteModal] = useState<SimpleSaveResource | null>(null);
+    const [saves, setSaves] = useState<PaginationPages<SimpleSaveResource> | undefined>(undefined);
+    const {state: orderDesc, setState: setOrderDesc, toggle: toggleOrderDesc} = useBooleanState(true);
+    const [isLoadingPage, setIsLoadingPage] = useState(false);
+    const [toDeleteSave, setToDeleteSave] = useState<SimpleSaveResource | undefined>(undefined);
 
-    /**
-     * Definiert auf welchen Context zugegriffen werden soll
-     */
-    static contextType = FooterContext;
+    const paginationSettings = useMemo(() => {
+        return {orderDesc} as SavesPaginationSetting
+    }, [orderDesc]);
 
-    context!: React.ContextType<typeof FooterContext>
+    //CONTEXT
+    const footerContext = useFooterControllerContext();
+    const isDesktop = useIsDesktop();
+    const history = useHistory();
+    const {user} = useUserContext();
+    const {add} = useMessageContext();
 
-
-    private paginationLoader: PaginationLoader<SimpleSaveResource>;
-    private readonly savesControlCallbacks: SavesControlCallbacks;
-
-    constructor(props: ToolHomeProps | Readonly<ToolHomeProps>) {
-        super(props);
-
-        this.savesControlCallbacks = {
-            loadPage: this.loadPage,
-            updatePages: this.updatePages,
-            updateSettings: this.updateSettings,
-            deleteSave: this.deleteSave,
-            openInviteModal: this.openInviteModal
-        };
-
-        this.paginationLoader = new PaginationLoader<SimpleSaveResource>(async (page, perPage) => {
-            let userId = Session.currentUser?.getID() as number;
+    const paginationLoader = useMemo(() => {
+        return new PaginationLoader<SimpleSaveResource>(async (page) => {
+            let userId = user?.getID() as number;
 
             return await getSaves(userId, {
-                toolID: this.props.tool.getID(),
+                toolID: tool.getID(),
                 page: page,
-                ...this.state.paginationSettings,
+                orderDesc,
                 deleted: false
             });
         });
-        this.state = {
-            showDeleteModal: false,
-            showTutorial: false,
-            isLoadingPage: false,
-            showInviteModal: null,
-            paginationSettings: {
-                orderDesc: true
-            },
-            showImportModal: false
-        }
-    }
+    }, [user, tool, orderDesc]);
 
-    componentDidMount() {
+
+    const savesControlCallbacks = useMemo(() => {
+        async function loadPage(page: number) {
+            setIsLoadingPage(true)
+            await paginationLoader.loadPage(page);
+            setSaves(paginationLoader.getAllLoaded);
+            setIsLoadingPage(false);
+        }
+
+        async function updatePages() {
+            setSaves(undefined);
+            paginationLoader.clearCache();
+            await paginationLoader.loadPage(1);
+            setSaves(paginationLoader.getAllLoaded);
+        }
+
+        function updateSettings(settings: SavesPaginationSetting) {
+            setOrderDesc(settings.orderDesc);
+        }
+
+        function deleteSave(save: SimpleSaveResource) {
+            setToDeleteSave(save);
+            setShowDeleteModal(true);
+        }
+
+        return {
+            loadPage: loadPage,
+            updatePages: updatePages,
+            updateSettings: updateSettings,
+            deleteSave: deleteSave,
+            openInviteModal: setShowInviteModal
+        }
+    }, [paginationLoader, setOrderDesc, setShowDeleteModal]);
+
+    const navigateToNewTool = useCallback(() => history.push(tool.getLink() + "/new"), [tool, history])
+
+
+    useEffect(() => {
         let place = 1;
-        this.context.setItem(place, {
+        footerContext.setItem(place, {
             newTool: {
-                callback: () => this.props.tool.switchPage("new"),
+                callback: navigateToNewTool,
                 title: "Neue Analyse"
             }
         });
-        if (this.props.tool.hasImporter()) {
+        if (tool.hasImporter()) {
             place++;
-            this.context.setItem(place, {
+            footerContext.setItem(place, {
                 button: {
                     icon: faFileImport,
-                    callback: () => this.onImport(),
+                    callback: showImportModalCallback,
                     text: "Importieren"
                 }
             });
         }
         place++;
-        this.context.setItem(place, {settings: true});
+        footerContext.setItem(place, {settings: true});
+        return () => {
+            footerContext.clearItems();
+        }
+    }, [footerContext, navigateToNewTool, tool, showImportModalCallback]);
 
-        this.loadPage(1);
-    }
+    useEffect(() => {
+        let canceled = false;
+        setSaves(undefined);
+        setIsLoadingPage(true);
+        paginationLoader.loadPage(1).then(() => {
+            if (canceled)
+                return;
+            setSaves(paginationLoader.getAllLoaded());
+        }).finally(() => {
+            if (canceled)
+                return;
+            setIsLoadingPage(false);
+        }).catch(console.error);
 
-    componentWillUnmount() {
-        this.context.clearItems();
-    }
 
-    getTutorialCanvas = () => {
-        return (
-            <Offcanvas placement={"start"} onHide={() => this.setState({showTutorial: false})}
-                       show={this.state.showTutorial}>
-                <OffcanvasHeader closeButton onClick={() => this.setState({showTutorial: false})}>
-                    <Offcanvas.Title>{this.props.tool.getToolName()}</Offcanvas.Title>
-                </OffcanvasHeader>
-                <OffcanvasBody>
-                    {this.props.info?.tutorial}
-                </OffcanvasBody>
-            </Offcanvas>
-        );
-    }
+        return () => {
+            canceled = true;
+        }
+    }, [paginationLoader]);
 
-    onInfoClick = () => {
-        this.setState({showTutorial: true});
-    }
 
-    render = () => {
-        let title = this.props.tool.getToolName();
+    const onCloseDeleteModal = useCallback(() => {
+        setShowDeleteModal(false);
+        setToDeleteSave(undefined);
+    }, [setShowDeleteModal, setToDeleteSave]);
 
-        return (
-            <div className={"toolHome"}>
-                <h4>
-                    <FAE icon={this.props.tool.getToolIcon()}/> &nbsp; {title} &nbsp;
+    const onDeleteModal = useCallback(async (id: number) => {
+        await deleteSave(id);
+        setShowDeleteModal(false);
+        setToDeleteSave(undefined);
+        savesControlCallbacks.updatePages()
+            .catch(console.error);
+    }, [savesControlCallbacks, setShowDeleteModal, setToDeleteSave]);
 
-                    {(this.props.tool.hasTutorial()) && (
-                        <Badge
-                            bg="dark"
-                            className={"description"}
-                            onClick={this.onInfoClick}
-                        >
-                            <FAE icon={faInfoCircle}/>
-                        </Badge>
-                    )}
-                </h4>
+    const closeInviteModal = useCallback(() => {
+        setShowInviteModal(null);
+    }, []);
 
-                {this.props.info?.shortDescription}
+    const onImportSuccess = useCallback((save: SimpleSaveResource) => {
+        history.push(tool.getLink() + "/" + save.id.toString());
+        add("Importieren erfolgreich!", "SUCCESS", Messages.TIMER);
+    }, [add, history, tool]);
 
-                <DesktopContext.Consumer children={isDesktop => {
-                    return (
-                        <div className={"button-container mb-0 mt-2"}>
-                            {isDesktop && (
-                                <ButtonPanel>
-                                    <Button onClick={this.onNewSaveButtonClick} size={"sm"} variant={"dark"}>
-                                        <FAE icon={faPlusSquare}/> Neue Analyse
-                                    </Button>
+    return (
+        <div className={"toolHome"}>
+            <h4>
+                <FAE icon={tool.getToolIcon()}/> &nbsp; {tool.getToolName()} &nbsp;
 
-                                    {(this.props.tool.hasImporter()) && (
-                                        <Button size={"sm"} onClick={this.onImport} variant={"dark"}>
-                                            <FAE icon={faFileImport}/> Analyse importieren
-                                        </Button>
-                                    )}
-                                </ButtonPanel>
-                            )}
+                {(tool.hasTutorial()) && (
+                    <Badge
+                        bg="dark"
+                        className={"description"}
+                        onClick={showTutorialCallback}
+                    >
+                        <FAE icon={faInfoCircle}/>
+                    </Badge>
+                )}
+            </h4>
 
-                            <span className={"sorting-button"}>
+            {tool.renderShortDescription()}
+
+            <div className={"button-container mb-0 mt-2"}>
+                {isDesktop && (
+                    <ButtonPanel>
+                        <Button onClick={navigateToNewTool} size={"sm"} variant={"dark"}>
+                            <FAE icon={faPlusSquare}/> Neue Analyse
+                        </Button>
+
+                        {(tool.hasImporter()) && (
+                            <Button size={"sm"} onClick={showImportModalCallback} variant={"dark"}>
+                                <FAE icon={faFileImport}/> Analyse importieren
+                            </Button>
+                        )}
+                    </ButtonPanel>
+                )}
+
+                <span className={"sorting-button"}>
                             {isDesktop && (
                                 <span>Nach Erstelldatum sortieren: </span>
                             )}
 
-                                <Button type={"button"}
-                                        disabled={this.state.isLoadingPage || this.state.saves === undefined}
-                                        className={"btn btn-primary"}
-                                        onClick={this.orderingChangedCallback}
-                                        title={"Nach Erstelldatum sortieren"}>
+                    <Button type={"button"}
+                            disabled={isLoadingPage || saves === undefined}
+                            className={"btn btn-primary"}
+                            onClick={toggleOrderDesc}
+                            title={"Nach Erstelldatum sortieren"}>
                                     <FAE
-                                        icon={this.state.paginationSettings.orderDesc ? faSortAmountDown : faSortAmountUp}/>
+                                        icon={orderDesc ? faSortAmountDown : faSortAmountUp}/>
                                 </Button>
                             </span>
-                        </div>
-                    );
-                }}/>
-
-
-                <hr/>
-
-                <div className={"saves mt-2"}>
-                    <SaveResourceList tool={this.props.tool!} saves={this.state.saves}
-                                      savesControlCallbacks={this.savesControlCallbacks}
-                                      paginationSettings={this.state.paginationSettings}
-                                      pageIsLoading={this.state.isLoadingPage}/>
-                </div>
-
-                {this.props.children}
-
-                {(this.state.showTutorial && this.props.tool?.hasTutorial()) && this.getTutorialCanvas()}
-
-                <SharedSaveContextComponent permission={this.state.deleteSave?.permission?.permission}>
-                    <DeleteSaveModal
-                        show={this.state.showDeleteModal}
-                        save={this.state.deleteSave ?? null}
-                        onClose={this.onCloseDeleteModal}
-                        onDelete={this.onDeleteModal}
-                    />
-                </SharedSaveContextComponent>
-
-                <SharedSaveContextComponent permission={this.state.showInviteModal?.permission?.permission}>
-                    <SaveInvitation
-                        show={this.state.showInviteModal !== null}
-                        save={this.state.showInviteModal}
-                        onClose={this.closeInviteModal}
-                    />
-                </SharedSaveContextComponent>
-
-                <MessageContext.Consumer children={({add}) => {
-                    return (<ImportModal
-                        show={this.state.showImportModal}
-                        tool={this.props.tool}
-                        onClose={this.onCloseImportModal}
-                        onSuccess={(save) => {
-                            this.props.tool.switchPage(save.id.toString());
-                            add("Importieren erfolgreich!", "SUCCESS", Messages.TIMER);
-                        }}
-                    />);
-                }}/>
-
             </div>
-        );
-    }
 
-    private onCloseImportModal = () => {
-        this.setState({
-            showImportModal: false
-        });
-    }
+            <hr/>
 
-    private onCloseDeleteModal = () => {
-        this.setState({
-            showDeleteModal: false,
-            deleteSave: undefined
-        });
-    };
+            <div className={"saves mt-2"}>
+                <SaveResourceList tool={tool!} saves={saves}
+                                  savesControlCallbacks={savesControlCallbacks}
+                                  paginationSettings={paginationSettings}
+                                  pageIsLoading={isLoadingPage}/>
+            </div>
 
-    private onDeleteModal = async (id: number) => {
-        await deleteSave(id);
-        this.setState({
-            showDeleteModal: false,
-            deleteSave: undefined
-        }, () => {
-            this.updatePages();
-        });
-    }
+            {children}
 
-    private onNewSaveButtonClick = () => {
-        this.props.tool.switchPage("new")
-    }
+            {(showTutorial && tool?.hasTutorial()) && (
+                <TutorialCanvas show={true} hideCallback={hideTutorialCallback} toolName={tool.getToolName()}
+                                tutorial={tool.renderTutorial()}/>)}
 
+            <SharedSaveContextComponent permission={toDeleteSave?.permission?.permission}>
+                <DeleteSaveModal
+                    show={showDeleteModal}
+                    save={toDeleteSave ?? null}
+                    onClose={onCloseDeleteModal}
+                    onDelete={onDeleteModal}
+                />
+            </SharedSaveContextComponent>
 
-    private loadPage = async (page: number) => {
-        this.setState({
-            isLoadingPage: true
-        });
-        await this.paginationLoader.loadPage(page);
-        this.updateSavesState();
-        this.setState({
-            isLoadingPage: false
-        });
-    }
+            <SharedSaveContextComponent permission={showInviteModal?.permission?.permission}>
+                <SaveInvitation
+                    show={showInviteModal !== null}
+                    save={showInviteModal}
+                    onClose={closeInviteModal}
+                />
+            </SharedSaveContextComponent>
 
-    private updatePages = async () => {
-        this.setState({
-            saves: undefined
-        });
-        this.paginationLoader.clearCache();
-        await this.paginationLoader.loadPage(1);
-        this.updateSavesState();
+            <ImportModal
+                show={showImportModal}
+                tool={tool}
+                onClose={hideImportModalCallback}
+                onSuccess={onImportSuccess}/>
 
-    }
-
-    private updateSavesState = () => {
-        this.setState({
-            saves: this.paginationLoader.getAllLoaded()
-        });
-    }
-
-    private updateSettings = (settings: SavesPaginationSetting) => {
-        this.setState({
-            paginationSettings: settings
-        }, () => {
-            this.updatePages();
-        });
-    }
-
-    private orderingChangedCallback = () => {
-        this.updateSettings({
-            ...this.state.paginationSettings,
-            orderDesc: !this.state.paginationSettings.orderDesc,
-        });
-    }
-
-    private openInviteModal = async (save: SimpleSaveResource) => {
-        this.setState({
-            showInviteModal: save,
-        });
-    }
-
-    private closeInviteModal = async () => {
-        this.setState({
-            showInviteModal: null
-        });
-    }
-
-    private deleteSave = async (save: SimpleSaveResource) => {
-        this.setState({
-            showDeleteModal: true,
-            deleteSave: save
-        });
-    }
-
-    private onImport = () => {
-        this.setState({
-            showImportModal: true
-        });
-    }
+        </div>
+    );
 }
 
-export {
-    ToolHome
+function TutorialCanvas({show, hideCallback, toolName, tutorial}: {
+    show: boolean,
+    hideCallback: () => void,
+    toolName: ReactNode,
+    tutorial: ReactNode
+}) {
+
+    return (
+        <Offcanvas placement={"start"} onHide={hideCallback}
+                   show={show}>
+            <OffcanvasHeader closeButton onClick={hideCallback}>
+                <Offcanvas.Title>{toolName}</Offcanvas.Title>
+            </OffcanvasHeader>
+            <OffcanvasBody>
+                {tutorial}
+            </OffcanvasBody>
+        </Offcanvas>
+    );
 }

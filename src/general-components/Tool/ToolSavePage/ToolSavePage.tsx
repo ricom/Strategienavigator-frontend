@@ -5,7 +5,6 @@ import {Session} from "../../Session/Session";
 import {Loader} from "../../Loader/Loader";
 import {useHistory, useParams} from "react-router";
 import {lockSave, updateSave} from "../../API/calls/Saves";
-import {Tool} from "../Tool";
 import {Messages, useMessageContext} from "../../Messages/Messages";
 import {Button, Modal} from "react-bootstrap";
 import {Route} from "react-router-dom";
@@ -23,6 +22,7 @@ import {useBooleanState} from "../../Utility/Hooks";
 import {showErrorPage} from "../../../ErrorPage";
 import {HTTPError} from "../../Utility/ErrorTypes";
 import {useUserContext} from "../../Contexts/UserContextComponent";
+import {ToolData} from "../Data/ToolData";
 
 
 interface ToolSaveController<D> {
@@ -39,7 +39,7 @@ interface ToolSaveProps<D extends object> {
 }
 
 interface ToolSavePageProps<D extends object> {
-    tool: Tool<D>
+    tool: ToolData<D>
     element: (saveProps: ToolSaveProps<D>) => ReactElement
 }
 

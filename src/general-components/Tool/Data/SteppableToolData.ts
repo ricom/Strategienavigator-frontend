@@ -1,37 +1,32 @@
-import {Tool} from "../Tool";
-
-import "./steppable-tool.scss";
-import StepComponent, {StepComponentProps, StepDefinition} from "./StepComponent/StepComponent";
-import React, {ClassAttributes} from "react";
-import {RouteComponentProps} from "react-router";
+import {ToolData} from "./ToolData";
+import StepComponent, {StepComponentProps, StepDefinition} from "../SteppableTool/StepComponent/StepComponent";
 import {IconDefinition} from "@fortawesome/fontawesome-svg-core";
-import {ToolSaveProps} from "../ToolSavePage/ToolSavePage";
 import {withUIErrorContext} from "../../Contexts/UIErrorContext/UIErrorContext";
 import {withMessagesContext} from "../../Messages/Messages";
+import {ToolSaveProps} from "../ToolSavePage/ToolSavePage";
+import React, {ClassAttributes} from "react";
 
-
-abstract class SteppableTool<D extends object> extends Tool<D> {
+export abstract class SteppableToolData<D extends object> extends ToolData<D> {
     private readonly typeStepComponent: any;
 
     // STEP COMPONENT
     private steps: Array<StepDefinition<any>> = [];
 
-    protected constructor(props: RouteComponentProps, context: any, toolName: string, toolIcon: IconDefinition, toolID: number) {
-        super(props, context, toolName, toolIcon, toolID);
+    constructor(toolName: string, toolIcon: IconDefinition, toolID: number, toolLink: string) {
+        super(toolName, toolIcon, toolID, toolLink);
         this.typeStepComponent = withUIErrorContext(withMessagesContext(class TypeStepComponent extends StepComponent<D> {
         }));
     }
 
-    public getStep(index: number) {
+    public getStep = (index: number) => {
         return this.steps[index];
     }
 
-    // 泛型控制传参类型
-    protected addStep<E extends object>(step: StepDefinition<E>) {
+    protected addStep = <E extends object>(step: StepDefinition<E>) =>{
         this.steps.push(step);
     }
 
-    protected getStepComponent(saveProps: ToolSaveProps<D>) {
+    protected getStepComponent = (saveProps: ToolSaveProps<D>) => {
         type stepProps = StepComponentProps<D> & ClassAttributes<StepComponent<D>>;
         let props: stepProps = {
             key: "stepcomponent",
@@ -43,14 +38,9 @@ abstract class SteppableTool<D extends object> extends Tool<D> {
         let typesProps = props as stepProps;
 
         return React.createElement(this.typeStepComponent, typesProps, null);
-
     }
 
-    protected buildSaveBuilder(saveProps: ToolSaveProps<D>): JSX.Element {
+    public buildSaveBuilder = (saveProps: ToolSaveProps<D>) => {
         return this.getStepComponent(saveProps);
     }
-}
-
-export {
-    SteppableTool
 }

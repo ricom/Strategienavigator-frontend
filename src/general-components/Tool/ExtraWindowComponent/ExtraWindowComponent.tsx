@@ -1,15 +1,15 @@
 import {Component} from "react";
 import {StepController} from "../SteppableTool/StepComponent/StepComponent";
 import "./extra-window-component.scss";
-import {SteppableTool} from "../SteppableTool/SteppableTool";
 import {IResourceManager} from "../ToolSavePage/ResourceManager";
+import {SteppableToolData} from "../Data/SteppableToolData";
 
 
 export interface ExtraWindowProps<D extends object> {
     /**
      * Das aktuelle Tool
      */
-    tool: SteppableTool<D>
+    tool: SteppableToolData<D>
     /**
      *  Die aktellen Speicherstanddaten
      */

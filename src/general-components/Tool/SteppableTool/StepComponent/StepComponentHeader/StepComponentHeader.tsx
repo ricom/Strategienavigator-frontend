@@ -1,5 +1,4 @@
 import React, {PureComponent} from "react";
-import {Tool} from "../../../Tool";
 import {Button, Collapse, Form} from "react-bootstrap";
 
 import "./step-header.scss";
@@ -16,10 +15,11 @@ import {lockSave} from "../../../../API/calls/Saves";
 import {ToolSaveController} from "../../../ToolSavePage/ToolSavePage";
 import {LoadingButton} from "../../../../LoadingButton/LoadingButton";
 import {checkIfDesktop} from "../../../../Contexts/DesktopContext";
+import {ToolData} from "../../../Data/ToolData";
 
 
 export interface StepComponentHeaderProp {
-    tool: Tool<any>
+    tool: ToolData<any>
     associatedSave: SaveResource<any>
     saveName: string
     saveDescription: string
