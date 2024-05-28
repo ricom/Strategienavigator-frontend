@@ -1,5 +1,4 @@
 import {faSortAmountDownAlt} from "@fortawesome/free-solid-svg-icons";
-import {RouteComponentProps} from "react-router";
 import {JSONExporter} from "../../../general-components/Export/JSONExporter";
 import "./pairwise-comparison.scss";
 
@@ -27,8 +26,8 @@ export interface PairwiseComparisonValues {
 class PairwiseComparison extends SteppableToolData<PairwiseComparisonValues> {
 
 
-    constructor(props: RouteComponentProps, context: any) {
-        super(props, context, "Paarweiser Vergleich", faSortAmountDownAlt, 3);
+    constructor() {
+        super( "Paarweiser Vergleich", faSortAmountDownAlt, 3,"/pairwise-comparison");
 
         this.setMaintenance(false);
 
@@ -42,7 +41,7 @@ class PairwiseComparison extends SteppableToolData<PairwiseComparisonValues> {
         this.addStep(new PCResult());
     }
 
-    protected getInitData(): PairwiseComparisonValues {
+    public getInitData(): PairwiseComparisonValues {
         const data: PairwiseComparisonValues = {};
 
         this.getStep(0).dataHandler.fillFromPreviousValues(data);
@@ -50,11 +49,11 @@ class PairwiseComparison extends SteppableToolData<PairwiseComparisonValues> {
         return data;
     }
 
-    protected renderShortDescription(): React.ReactNode {
+    public renderShortDescription(): React.ReactNode {
         return undefined;
     }
 
-    protected renderTutorial(): React.ReactNode {
+    public renderTutorial(): React.ReactNode {
         return undefined;
     }
 }

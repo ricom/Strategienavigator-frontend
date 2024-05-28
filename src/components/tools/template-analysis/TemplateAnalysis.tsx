@@ -1,4 +1,3 @@
-import {SteppableTool} from "../../../general-components/Tool/SteppableTool/SteppableTool";
 import {ReactNode} from "react";
 import {RouteComponentProps} from "react-router";
 import {faCube} from "@fortawesome/free-solid-svg-icons";
@@ -13,6 +12,7 @@ import {TemplateStep3} from "./steps/TemplateStep3/TemplateStep3";
 import {TemplateStep3Values} from "./steps/TemplateStep3/TemplateStep3Component";
 
 import "./template-analysis.scss";
+import {SteppableToolData} from "../../../general-components/Tool/Data/SteppableToolData";
 
 export interface TemplateAnalysisValues {
     "template-step-1"?: TemplateStep1Values,
@@ -23,10 +23,10 @@ export interface TemplateAnalysisValues {
 /**
  * Repräsentiert das Tool "Template-Analyse"
  */
-class TemplateAnalysis extends SteppableTool<TemplateAnalysisValues> {
+class TemplateAnalysis extends SteppableToolData<TemplateAnalysisValues> {
 
-    constructor(props: RouteComponentProps, context: any) {
-        super(props, context, "Template-Analyse", faCube, 9999);
+    constructor() {
+        super("Template-Analyse", faCube, 9999,"/template-analyse");
 
         // Wartungarbeiten?
         this.setMaintenance(false);
@@ -44,7 +44,7 @@ class TemplateAnalysis extends SteppableTool<TemplateAnalysisValues> {
         this.addStep(new TemplateStep3());
     }
 
-    protected getInitData(): TemplateAnalysisValues {
+    public getInitData(): TemplateAnalysisValues {
         let data = {
             "template-step-1": undefined,
             "template-step-2": undefined,
@@ -54,7 +54,7 @@ class TemplateAnalysis extends SteppableTool<TemplateAnalysisValues> {
         return data;
     }
 
-    protected renderShortDescription(): ReactNode {
+    public renderShortDescription(): ReactNode {
         return (
             <>
                 Ich bin eine Shortdescription!
@@ -62,7 +62,7 @@ class TemplateAnalysis extends SteppableTool<TemplateAnalysisValues> {
         );
     }
 
-    protected renderTutorial(): ReactNode {
+    public renderTutorial(): ReactNode {
         return (
             <>
                 Ich bin ein Tutorial. Ich erscheine auf der linken Seite!

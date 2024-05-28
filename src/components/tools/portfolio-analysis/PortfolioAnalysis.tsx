@@ -1,8 +1,6 @@
 import {faArrowsAlt} from "@fortawesome/free-solid-svg-icons";
 
 import "./portfolio-analysis.scss";
-import {SteppableTool} from "../../../general-components/Tool/SteppableTool/SteppableTool";
-import {RouteComponentProps} from "react-router";
 import {PortCreateObjectsValues} from "./steps/PortObjects/PortObjectsComponent";
 import {PortObjects} from "./steps/PortObjects/PortObjects";
 import {PortCriterias} from "./steps/PortCriterias/PortCriterias";
@@ -16,6 +14,7 @@ import {PortResult} from "./steps/PortResult/PortResult";
 import {JSONExporter} from "../../../general-components/Export/JSONExporter";
 import {PortfolioExcelExporter} from "./export/PortfolioExcelExporter";
 import {PortJSONImporter} from "./import/PortJSONImporter";
+import {SteppableToolData} from "../../../general-components/Tool/Data/SteppableToolData";
 
 
 interface PortfolioAnalysisValues {
@@ -26,10 +25,10 @@ interface PortfolioAnalysisValues {
     "port-result"?: PortResultValues
 }
 
-class PortfolioAnalysis extends SteppableTool<PortfolioAnalysisValues> {
+class PortfolioAnalysis extends SteppableToolData<PortfolioAnalysisValues> {
 
-    constructor(props: RouteComponentProps, context: any) {
-        super(props, context, "Portfolio Analyse", faArrowsAlt, 4);
+    constructor() {
+        super("Portfolio Analyse", faArrowsAlt, 4,"/portfolio-analysis");
 
         this.setMaintenance(false);
         this.addExporter(new JSONExporter());
@@ -44,15 +43,11 @@ class PortfolioAnalysis extends SteppableTool<PortfolioAnalysisValues> {
         this.addStep(new PortResult());
     }
 
-    protected renderToolHome() {
+    public renderShortDescription() {
         return null;
     }
 
-    protected renderShortDescription() {
-        return null;
-    }
-
-    protected renderTutorial() {
+    public renderTutorial() {
         return (
             <div>
                 Als Portfolioanalyse wird eine Untersuchungsmethode bezeichnet,
@@ -67,7 +62,7 @@ class PortfolioAnalysis extends SteppableTool<PortfolioAnalysisValues> {
         );
     }
 
-    protected getInitData(): PortfolioAnalysisValues {
+    public getInitData(): PortfolioAnalysisValues {
         let data: PortfolioAnalysisValues = {};
         this.getStep(0).dataHandler.fillFromPreviousValues(data);
         return data;

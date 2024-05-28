@@ -60,11 +60,11 @@ function Tool({tool}: ToolProps) {
     return (
         <>
             <Switch>
-                <Route exact path={"/home"}>
+                <Route exact path={tool.getLink() + "/"}>
                     <ToolHome tool={tool}/>
                 </Route>
 
-                <Route exact path={"/new"}>
+                <Route exact path={tool.getLink() + "/new"}>
                     <CreateToolModal onSaveCreated={createNewSave}
                                      onCancel={onCreateCancel}
                                      isCreatingNewSave={isCreatingNewSave}/>
@@ -72,9 +72,10 @@ function Tool({tool}: ToolProps) {
 
                 <Route
                     exact
-                    path={"/:id"}>
+                    path={tool.getLink() + "/:id"}>
                     <ToolSavePage tool={tool} element={tool.buildSaveBuilder}/>
                 </Route>
+
             </Switch>
         </>
     );

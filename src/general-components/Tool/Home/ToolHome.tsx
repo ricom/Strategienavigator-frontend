@@ -120,7 +120,7 @@ export function ToolHome({
             deleteSave: deleteSave,
             openInviteModal: setShowInviteModal
         }
-    }, [paginationLoader,setOrderDesc,setShowDeleteModal]);
+    }, [paginationLoader, setOrderDesc, setShowDeleteModal]);
 
     const navigateToNewTool = useCallback(() => history.push(tool.getLink() + "/new"), [tool, history])
 
@@ -148,7 +148,7 @@ export function ToolHome({
         return () => {
             footerContext.clearItems();
         }
-    }, [navigateToNewTool, footerContext, tool, showImportModalCallback]);
+    }, [footerContext.setItem, footerContext.clearItems, navigateToNewTool, tool, showImportModalCallback]);
 
     useEffect(() => {
         let canceled = false;
@@ -174,7 +174,7 @@ export function ToolHome({
     const onCloseDeleteModal = useCallback(() => {
         setShowDeleteModal(false);
         setToDeleteSave(undefined);
-    }, [setShowDeleteModal,setToDeleteSave]);
+    }, [setShowDeleteModal, setToDeleteSave]);
 
     const onDeleteModal = useCallback(async (id: number) => {
         await deleteSave(id);
@@ -182,7 +182,7 @@ export function ToolHome({
         setToDeleteSave(undefined);
         savesControlCallbacks.updatePages()
             .catch(console.error);
-    }, [savesControlCallbacks]);
+    }, [savesControlCallbacks, setShowDeleteModal, setToDeleteSave]);
 
     const closeInviteModal = useCallback(() => {
         setShowInviteModal(null);

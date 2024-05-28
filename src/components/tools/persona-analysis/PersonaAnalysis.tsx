@@ -1,9 +1,7 @@
 import {faUserCircle} from "@fortawesome/free-solid-svg-icons";
 
 import "./persona-analysis.scss";
-import {SteppableTool} from "../../../general-components/Tool/SteppableTool/SteppableTool";
 import {JSONExporter} from "../../../general-components/Export/JSONExporter";
-import {RouteComponentProps} from "react-router";
 import {PersonaJSONImporter} from "./import/PersonaJSONImporter";
 import {PersonaInfoValues} from "./steps/PersonaInfo/PersonaInfoComponent";
 import {PersonaInfo} from "./steps/PersonaInfo/PersonaInfo";
@@ -12,6 +10,7 @@ import {PersonaPersonality} from "./steps/PersonaPersonality/PersonaPersonality"
 import {PersonaSummaryValues} from "./steps/PersonaSummary/PersonaSummaryComponent";
 import {PersonaSummary} from "./steps/PersonaSummary/PersonaSummary";
 import {PersonaPDFExporter} from "./export/PersonaPDFExporter";
+import {SteppableToolData} from "../../../general-components/Tool/Data/SteppableToolData";
 
 interface PersonaAnalysisValues {
     "persona-info"?: PersonaInfoValues,
@@ -19,10 +18,10 @@ interface PersonaAnalysisValues {
     "persona-summary"?: PersonaSummaryValues
 }
 
-class PersonaAnalysis extends SteppableTool<PersonaAnalysisValues> {
+class PersonaAnalysis extends SteppableToolData<PersonaAnalysisValues> {
 
-    constructor(props: RouteComponentProps<{ id: string }>, context: any) {
-        super(props, context, "Persona Analyse", faUserCircle, 6);
+    constructor() {
+        super("Persona Analyse", faUserCircle, 6,"/persona-analysis");
 
         this.addExporter(new JSONExporter());
         this.addExporter(new PersonaPDFExporter());
@@ -33,7 +32,7 @@ class PersonaAnalysis extends SteppableTool<PersonaAnalysisValues> {
         this.addStep(new PersonaSummary());
     }
 
-    protected renderShortDescription() {
+    public renderShortDescription() {
         return (
             <>
                 Personas veranschaulichen typische Vertreter Ihrer Zielgruppe.
@@ -43,7 +42,7 @@ class PersonaAnalysis extends SteppableTool<PersonaAnalysisValues> {
         );
     }
 
-    protected renderTutorial() {
+    public renderTutorial() {
         return (
             <>
                 Personas veranschaulichen typische Vertreter Ihrer Zielgruppe.
@@ -60,7 +59,7 @@ class PersonaAnalysis extends SteppableTool<PersonaAnalysisValues> {
         );
     }
 
-    protected getInitData(): PersonaAnalysisValues {
+    public getInitData(): PersonaAnalysisValues {
         let data = {
             "persona-info": undefined,
             "persona-personality": undefined,

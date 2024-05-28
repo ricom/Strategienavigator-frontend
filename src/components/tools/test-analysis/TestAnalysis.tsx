@@ -1,6 +1,4 @@
-import {SteppableTool} from "../../../general-components/Tool/SteppableTool/SteppableTool";
 import {ReactNode} from "react";
-import {RouteComponentProps} from "react-router";
 import {faCube} from "@fortawesome/free-solid-svg-icons";
 import {JSONExporter} from "../../../general-components/Export/JSONExporter";
 import {TestAnalysisExcelExporter} from "./export/TestAnalysisExcelExporter";
@@ -18,6 +16,7 @@ import "./test-analysis.scss";
 import * as process from "process";
 import {TestCoordinateSystemValues} from "./steps/TestCoordinateSystem/TestCoordinateSystemComponent";
 import {TestCoordinateSystem} from "./steps/TestCoordinateSystem/TestCoordinateSystem";
+import {SteppableToolData} from "../../../general-components/Tool/Data/SteppableToolData";
 
 export interface TestAnalysisValues {
     "test-cardcomponent"?: TestCardcomponentValues,
@@ -30,10 +29,10 @@ export interface TestAnalysisValues {
 /**
  * Repräsentiert das Tool "Test-Analyse"
  */
-class TestAnalysis extends SteppableTool<TestAnalysisValues> {
+class TestAnalysis extends SteppableToolData<TestAnalysisValues> {
 
-    constructor(props: RouteComponentProps, context: any) {
-        super(props, context, "Test-Analyse (DEV only)", faCube, 9999);
+    constructor() {
+        super("Test-Analyse (DEV only)", faCube, 9999,"/test-analysis");
 
         // Wartungarbeiten?
         this.setMaintenance(process.env.NODE_ENV !== "development");
@@ -53,7 +52,7 @@ class TestAnalysis extends SteppableTool<TestAnalysisValues> {
         this.addStep(new TestCoordinateSystem());
     }
 
-    protected getInitData(): TestAnalysisValues {
+    public getInitData(): TestAnalysisValues {
         let data = {
             "test-cardcomponent": undefined,
             "test-comparecomponent": undefined,
@@ -65,7 +64,7 @@ class TestAnalysis extends SteppableTool<TestAnalysisValues> {
         return data;
     }
 
-    protected renderShortDescription(): ReactNode {
+    public renderShortDescription(): ReactNode {
         return (
             <>
                 Ich bin eine Shortdescription!
@@ -73,7 +72,7 @@ class TestAnalysis extends SteppableTool<TestAnalysisValues> {
         );
     }
 
-    protected renderTutorial(): ReactNode {
+    public renderTutorial(): ReactNode {
         return (
             <>
                 Ich bin ein Tutorial. Ich erscheine auf der linken Seite!

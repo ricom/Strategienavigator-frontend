@@ -33,6 +33,7 @@ import {Container} from "react-bootstrap";
 import {LegacyErrorPageAdapter} from "./LegacyErrorPageAdapter";
 import {Messages} from "./Messages/Messages";
 import {PasswordResetRequest} from "../components/platform/verifications/PasswordResetRequest/PasswordResetRequest";
+import {Tool} from "./Tool/Tool";
 
 
 export function App() {
@@ -67,18 +68,28 @@ export function App() {
                 <Route path={"/reset-password/:token"}><PasswordReset/></Route>
                 <Route path={"/reset-password"} exact><PasswordResetRequest/></Route>
 
-                (//TODO remove all usages of component and render props. (Only use children))
-                <Route loginAnonymous={true} loggedIn={true} path={"/pairwise-comparison"}
-                       component={PairwiseComparison}/>
-                <Route loginAnonymous={true} loggedIn={true} path={"/swot-analysis"} component={SWOTAnalysis}/>
-                <Route loginAnonymous={true} loggedIn={true} path={"/persona-analysis"} component={PersonaAnalysis}/>
-                <Route loginAnonymous={true} loggedIn={true} path={"/portfolio-analysis"}
-                       component={PortfolioAnalysis}/>
-                <Route loginAnonymous={true} loggedIn={true} path={"/utility-analysis"} component={UtilityAnalysis}/>
+                <Route loginAnonymous={true} loggedIn={true} path={"/pairwise-comparison"}>
+                    <Tool tool={new PairwiseComparison()}/>
+                </Route>
+                <Route loginAnonymous={true} loggedIn={true} path={"/swot-analysis"}>
+                    <Tool tool={new SWOTAnalysis()}/></Route>
+                <Route loginAnonymous={true} loggedIn={true} path={"/persona-analysis"}>
+                    <Tool tool={new PersonaAnalysis()}/></Route>
+                <Route loginAnonymous={true} loggedIn={true} path={"/portfolio-analysis"}>
+                    <Tool tool={new PortfolioAnalysis()}/>
+                </Route>
+                <Route loginAnonymous={true} loggedIn={true} path={"/utility-analysis"}>
+                    <Tool tool={new UtilityAnalysis()}/>
+                </Route>
 
                 {/* DEV  */(process.env.NODE_ENV === "development") && (
-                    <Route loginAnonymous={true} loggedIn={true} path={"/test-analysis"} component={TestAnalysis}/>
+                    <Route loginAnonymous={true} loggedIn={true} path={"/test-analysis"}>
+                        <Tool tool={new TestAnalysis()}/>
+                    </Route>
                 )}
+
+
+                (//TODO remove all usages of component and render props. (Only use children))
 
                 <Route path={"/error/:code"} component={ErrorPages}/>
 

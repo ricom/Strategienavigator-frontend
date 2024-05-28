@@ -1,8 +1,6 @@
 import {faBorderAll} from "@fortawesome/free-solid-svg-icons";
 
 import "./utility-analysis.scss";
-import {SteppableTool} from "../../../general-components/Tool/SteppableTool/SteppableTool";
-import {RouteComponentProps} from "react-router";
 import {UtilInvestigationObjectsValues} from "./steps/UtilInvestigationObjects/UtilInvestigationObjectsComponent";
 import {UtilWeightingValues} from "./steps/UtilWeighting/UtilWeightingComponent";
 import {UtilCriteriasValues} from "./steps/UtilCriterias/UtilCriteriasComponent";
@@ -16,6 +14,7 @@ import {UtilEvaluation} from "./steps/UtilEvaluation/UtilEvaluation";
 import {UtilResult} from "./steps/UtilityResult/UtilResult";
 import {UtilityAnalysisExcelExporter} from "./export/UtilityAnalysisExcelExporter";
 import {UtilityJSONImporter} from "./import/UtilityJSONImporter";
+import {SteppableToolData} from "../../../general-components/Tool/Data/SteppableToolData";
 
 
 export interface UtilityAnalysisValues {
@@ -31,11 +30,10 @@ export interface UtilityAnalysisValues {
  * Hauptklasse der Nutzwertanalyse
  * Hier werden die einzelnen Schritte für die Analyse hinzugefügt
  */
-class UtilityAnalysis extends SteppableTool<UtilityAnalysisValues> {
+class UtilityAnalysis extends SteppableToolData<UtilityAnalysisValues> {
 
-    constructor(props: RouteComponentProps, context: any) {
-        super(props, context, "Nutzwertanalyse", faBorderAll, 1);
-
+    constructor() {
+        super("Nutzwertanalyse", faBorderAll, 1,"/utility-analysis");
         this.setMaintenance(false);
 
         this.addExporter(new JSONExporter());
@@ -48,19 +46,20 @@ class UtilityAnalysis extends SteppableTool<UtilityAnalysisValues> {
         this.addStep(new UtilWeighting());
         this.addStep(new UtilEvaluation());
         this.addStep(new UtilResult());
+
     }
 
-    protected getInitData(): UtilityAnalysisValues {
+    public getInitData(): UtilityAnalysisValues {
         let data: UtilityAnalysisValues = {};
         this.getStep(0).dataHandler.fillFromPreviousValues(data);
         return data;
     }
 
-    protected renderShortDescription(): React.ReactNode {
+    public renderShortDescription(): React.ReactNode {
         return undefined;
     }
 
-    protected renderTutorial(): React.ReactNode {
+    public renderTutorial(): React.ReactNode {
         return undefined;
     }
 

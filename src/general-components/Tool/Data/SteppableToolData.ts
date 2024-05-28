@@ -12,22 +12,21 @@ export abstract class SteppableToolData<D extends object> extends ToolData<D> {
     // STEP COMPONENT
     private steps: Array<StepDefinition<any>> = [];
 
-    protected constructor(toolName: string, toolIcon: IconDefinition, toolID: number, toolLink: string) {
+    constructor(toolName: string, toolIcon: IconDefinition, toolID: number, toolLink: string) {
         super(toolName, toolIcon, toolID, toolLink);
         this.typeStepComponent = withUIErrorContext(withMessagesContext(class TypeStepComponent extends StepComponent<D> {
         }));
     }
 
-    public getStep(index: number) {
+    public getStep = (index: number) => {
         return this.steps[index];
     }
 
-    // 泛型控制传参类型
-    protected addStep<E extends object>(step: StepDefinition<E>) {
+    protected addStep = <E extends object>(step: StepDefinition<E>) =>{
         this.steps.push(step);
     }
 
-    protected getStepComponent(saveProps: ToolSaveProps<D>) {
+    protected getStepComponent = (saveProps: ToolSaveProps<D>) => {
         type stepProps = StepComponentProps<D> & ClassAttributes<StepComponent<D>>;
         let props: stepProps = {
             key: "stepcomponent",
@@ -41,7 +40,7 @@ export abstract class SteppableToolData<D extends object> extends ToolData<D> {
         return React.createElement(this.typeStepComponent, typesProps, null);
     }
 
-    protected buildSaveBuilder(saveProps: ToolSaveProps<D>): JSX.Element {
+    public buildSaveBuilder = (saveProps: ToolSaveProps<D>) => {
         return this.getStepComponent(saveProps);
     }
 }
