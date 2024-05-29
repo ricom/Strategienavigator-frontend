@@ -33,6 +33,9 @@ export function EmailVerification() {
 
     useEffect(() => {
         let canceled = false;
+        if(!token){
+            return;
+        }
         verifyEmail(token).then((call) => {
             if (call && !canceled) {
                 setLoaded(true);

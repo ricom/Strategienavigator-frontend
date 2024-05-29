@@ -1,5 +1,4 @@
 import {ReactNode} from "react";
-import {RouteComponentProps} from "react-router";
 import {faCube} from "@fortawesome/free-solid-svg-icons";
 import {JSONExporter} from "../../../general-components/Export/JSONExporter";
 import {TemplateAnalysisExcelExporter} from "./export/TemplateAnalysisExcelExporter";

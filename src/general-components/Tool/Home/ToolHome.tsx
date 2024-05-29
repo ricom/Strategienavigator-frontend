@@ -19,8 +19,8 @@ import {Messages, useMessageContext} from "../../Messages/Messages";
 import {useIsDesktop} from "../../Contexts/DesktopContext";
 import {ToolData} from "../Data/ToolData";
 import {useBooleanState} from "../../Utility/Hooks";
-import {useHistory} from "react-router";
 import {useUserContext} from "../../Contexts/UserContextComponent";
+import {useNavigate} from "react-router-dom";
 
 
 export interface ToolHomeInfo {
@@ -71,7 +71,7 @@ export function ToolHome({
     //CONTEXT
     const footerContext = useFooterControllerContext();
     const isDesktop = useIsDesktop();
-    const history = useHistory();
+    const navigate = useNavigate();
     const {user} = useUserContext();
     const {add} = useMessageContext();
 
@@ -122,7 +122,7 @@ export function ToolHome({
         }
     }, [paginationLoader, setOrderDesc, setShowDeleteModal]);
 
-    const navigateToNewTool = useCallback(() => history.push(tool.getLink() + "/new"), [tool, history])
+    const navigateToNewTool = useCallback(() => navigate(tool.getLink() + "/new"), [tool, navigate])
 
 
     useEffect(() => {
@@ -189,9 +189,9 @@ export function ToolHome({
     }, []);
 
     const onImportSuccess = useCallback((save: SimpleSaveResource) => {
-        history.push(tool.getLink() + "/" + save.id.toString());
+        navigate(tool.getLink() + "/" + save.id.toString());
         add("Importieren erfolgreich!", "SUCCESS", Messages.TIMER);
-    }, [add, history, tool]);
+    }, [add, navigate, tool]);
 
     return (
         <div className={"toolHome"}>

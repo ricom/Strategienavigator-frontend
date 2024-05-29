@@ -1,6 +1,6 @@
 import React, {ChangeEvent, useCallback, useEffect, useState} from "react";
 import {Badge, Card, Container, Dropdown, FormControl, Nav as BootstrapNav, Navbar, NavDropdown} from "react-bootstrap";
-import {NavLink} from "react-router-dom";
+import {NavLink, useNavigate} from "react-router-dom";
 import {
     faBalanceScale,
     faCog,
@@ -18,7 +18,6 @@ import "./nav.scss";
 import {getSaves} from "../../../general-components/API/calls/Saves";
 import {SimpleSaveResource} from "../../../general-components/Datastructures";
 import {Loader} from "../../../general-components/Loader/Loader";
-import {useHistory} from "react-router";
 import FAE from "../../../general-components/Icons/FAE";
 import {useUserContext} from "../../../general-components/Contexts/UserContextComponent";
 import {AnonportModal} from "./AnonportModal";
@@ -94,7 +93,7 @@ export function Nav() {
 
     const {user, isLoggedIn} = useUserContext();
     const {add: showMessage} = useMessageContext();
-    const history = useHistory();
+    const navigate = useNavigate();
 
     const searchPromptChanged = useCallback((e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         let value = e.target.value;
@@ -147,8 +146,8 @@ export function Nav() {
                 console.error(reason);
                 showMessage("Beim Logout is ein Fehler aufgetreten.", "DANGER");
             });
-        history.push("/logout");
-    }, [showMessage, history]);
+        navigate("/logout");
+    }, [showMessage, navigate]);
 
 
     return (

@@ -1,9 +1,9 @@
 import {ReactElement} from "react";
-import {useHistory, useParams} from "react-router";
+import {useParams} from "react-router";
 import {Forbidden} from "./forbidden/Fordidden";
 
 import "./error-pages.scss";
-import {Link} from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 import {NotFound} from "./not-found/NotFound";
 import {APINotReachable} from "./api-not-reachable/APINotReachable";
 import {Button} from "react-bootstrap";
@@ -18,7 +18,7 @@ export type ErrorComponentTypes =
     | ReactElement<ErrorPage>
     | ReactElement<APINotReachable>;
 
-function getErrorComponent(code:number): ErrorComponentTypes | undefined {
+function getErrorComponent(code: number): ErrorComponentTypes | undefined {
     if (code === 500) {
         return <APINotReachable/>;
     } else if (code === 404) {
@@ -31,15 +31,15 @@ function getErrorComponent(code:number): ErrorComponentTypes | undefined {
 }
 
 export function ErrorPages() {
-    let {codeString} = useParams() as { codeString: string|undefined };
+    let {codeString} = useParams() as { codeString: string | undefined };
     let code;
-    if(codeString === undefined){
+    if (codeString === undefined) {
         code = 404;
-    }else{
+    } else {
         code = parseInt(codeString);
     }
 
-    const history = useHistory();
+    const navigate = useNavigate();
 
     let component = getErrorComponent(code);
 
@@ -52,7 +52,7 @@ export function ErrorPages() {
             </div>
 
             {(code === 500) && (
-                <Button className="button" style={{marginRight: "0.75rem"}} onClick={history.goBack}
+                <Button className="button" style={{marginRight: "0.75rem"}} onClick={navigate.bind(null, -1)}
                         variant={"dark"}>
                     Erneut versuchen &nbsp;
                     <FAE icon={faRedo}/>

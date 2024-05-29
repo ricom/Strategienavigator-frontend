@@ -1,5 +1,5 @@
 import {useCallback, useEffect, useState} from "react";
-import {useHistory, useLocation, useParams} from "react-router";
+import {useLocation, useParams} from "react-router";
 import {
     acceptContribution,
     declineContribution,
@@ -16,6 +16,7 @@ import {Messages, useMessageContext} from "../../../../general-components/Messag
 import {getSaveURL, getSharedSavePermissionText} from "../../../../general-components/Save";
 import {useUserContext} from "../../../../general-components/Contexts/UserContextComponent";
 import {useErrorPageFunction} from "../../../../ErrorPage";
+import {useNavigate} from "react-router-dom";
 
 
 export function ContributionDecision() {
@@ -30,7 +31,7 @@ export function ContributionDecision() {
     const [isLoading, setIsLoading] = useState<boolean>(true);
 
     //Context
-    const history = useHistory();
+    const navigate = useNavigate();
     const location = useLocation();
     const {add: showMessage} = useMessageContext();
     const {user} = useUserContext();
@@ -47,7 +48,7 @@ export function ContributionDecision() {
 
             if (call && call.success) {
                 showMessage("Einladung angenommen!", "SUCCESS", 5000);
-                history.push(getSaveURL(sharedSave?.save.id as number, sharedSave?.save.tool.id as number));
+                navigate(getSaveURL(sharedSave?.save.id as number, sharedSave?.save.tool.id as number));
                 setAccepted(true)
             } else {
                 setAccepted(false);
@@ -61,7 +62,7 @@ export function ContributionDecision() {
                 setIsAccepting(false);
             }
         }
-    }, [setAccepted, setIsAccepting, showMessage, history, sharedSaveID, sharedSave?.save.id, sharedSave?.save.tool.id]);
+    }, [setAccepted, setIsAccepting, showMessage, navigate, sharedSaveID, sharedSave?.save.id, sharedSave?.save.tool.id]);
 
     const declineInvitation = useCallback(async (shouldCancel: { canceled: boolean } = {canceled: false}) => {
         setIsDeclining(true);

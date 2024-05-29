@@ -5,7 +5,7 @@ import {extractFromForm} from "../../../general-components/Utility/FormHelper";
 import {useLocation} from "react-router";
 import {PasswordField} from "../../../general-components/PasswordField/PasswordField";
 import {Messages, useMessageContext} from "../../../general-components/Messages/Messages";
-import {Link} from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 import {faSignInAlt, faUserSecret} from "@fortawesome/free-solid-svg-icons/";
 import {AnonymousModal} from "../../../general-components/ProtectedRoute";
 import {LoadingButton} from "../../../general-components/LoadingButton/LoadingButton";
@@ -26,7 +26,7 @@ export function Login() {
 
     // context
     const location = useLocation();
-    const history = useHistory();
+    const navigate = useNavigate();
     const {add: showMessage} = useMessageContext();
 
 
@@ -53,12 +53,12 @@ export function Login() {
 
         if (user !== null) {
             showMessage("Willkommen zurück!", "SUCCESS", Messages.TIMER);
-            history.push(path);
+            navigate(path);
         } else {
             setFailed(true);
             setIsLoggingIn(false);
         }
-    }, [getPath, history, showMessage, setIsLoggingIn, setFailed]);
+    }, [getPath, navigate, showMessage, setIsLoggingIn, setFailed]);
 
 
     const loginAnonymously = useCallback(async () => {
@@ -74,12 +74,12 @@ export function Login() {
 
             if (user) {
                 showMessage("Sie wurden anonym angemeldet!", "SUCCESS", Messages.TIMER);
-                history.push(path);
+                navigate(path);
             }
         }
 
         setIsLoggingInAnonymously(false);
-    }, [getPath, history, showMessage, setIsLoggingInAnonymously]);
+    }, [getPath, navigate, showMessage, setIsLoggingInAnonymously]);
 
     let email;
     if (params.has("email")) {

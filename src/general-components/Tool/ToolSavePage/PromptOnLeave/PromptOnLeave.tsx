@@ -1,8 +1,7 @@
-import React, {useCallback, useEffect, useState} from "react";
+import React, {useEffect} from "react";
 import './prompt-on-leave.sass';
-import {Prompt, useHistory} from "react-router";
 import {ConfirmToolRouteChangeModal} from "../../ConfirmToolRouteChangeModal/ConfirmToolRouteChangeModal";
-import * as H from "history";
+import {useBlocker} from "react-router-dom";
 
 
 export interface PromptOnLeaveProps {
@@ -15,38 +14,6 @@ export interface PromptOnLeaveProps {
 
 export function PromptOnLeave({shouldPreventChange, disableNativeDialog = false}: PromptOnLeaveProps) {
 
-    // State
-    const [showConfirmToolRouteChangeModal, setShowConfirmToolRouteChangeModal] = useState(false);
-    const [lastLocation, setLastLocation] = useState<string | undefined>(undefined);
-
-    // Context
-    const history = useHistory();
-
-    const denyRouteChange = useCallback((location: H.Location): boolean => {
-        // Don't show if save is unchanged
-        if (!shouldPreventChange)
-            return true;
-
-        setShowConfirmToolRouteChangeModal(true);
-        setLastLocation(location.pathname)
-        return (location.pathname === lastLocation);
-    }, [setShowConfirmToolRouteChangeModal, shouldPreventChange, lastLocation]);
-
-    const hideRouteChangeModal = useCallback(() => {
-        setShowConfirmToolRouteChangeModal(false);
-        setLastLocation(undefined);
-    }, [setShowConfirmToolRouteChangeModal, setLastLocation]);
-
-    const performRouteChange = useCallback(() => {
-
-        if (!lastLocation) {
-            history.goBack();
-            return;
-        }
-        setShowConfirmToolRouteChangeModal(false);
-        history.push(lastLocation);
-
-    }, [history, lastLocation, setShowConfirmToolRouteChangeModal]);
 
     useEffect(() => {
         /**
@@ -72,13 +39,19 @@ export function PromptOnLeave({shouldPreventChange, disableNativeDialog = false}
         }
     }, [disableNativeDialog, shouldPreventChange]);
 
+    const blocker = useBlocker(shouldPreventChange);
 
     return (<>
-        <Prompt message={denyRouteChange}/>
         <ConfirmToolRouteChangeModal
-            show={showConfirmToolRouteChangeModal}
-            onNo={hideRouteChangeModal}
-            onYes={performRouteChange}
+            show={blocker.state === "blocked"}
+            onNo={() => {
+                if (blocker.reset)
+                    blocker.reset()
+            }}
+            onYes={() => {
+                if (blocker.proceed)
+                    blocker.proceed()
+            }}
         />
     </>)
 }

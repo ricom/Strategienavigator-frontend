@@ -3,11 +3,11 @@ import React, {ReactElement, ReactNode, useCallback, useEffect, useMemo, useRef,
 import {SaveResource, SharedSavePermission,} from "../../Datastructures";
 import {Session} from "../../Session/Session";
 import {Loader} from "../../Loader/Loader";
-import {useHistory, useParams} from "react-router";
+import {useParams} from "react-router";
 import {lockSave, updateSave} from "../../API/calls/Saves";
 import {Messages, useMessageContext} from "../../Messages/Messages";
 import {Button, Modal} from "react-bootstrap";
-import {Route} from "react-router-dom";
+import {useNavigate} from "react-router-dom";
 import produce from "immer";
 import {WritableDraft} from "immer/dist/types/types-external";
 import {UIErrorContextComponent} from "../../Contexts/UIErrorContext/UIErrorContext";
@@ -68,7 +68,7 @@ export function ToolSavePage<D extends object>({tool, element}: ToolSavePageProp
 
     // context
     const {add: showMessage} = useMessageContext();
-    const history = useHistory();
+    const navigate = useNavigate();
     const {id: saveIdParam} = useParams() as { id: string };
     const saveId = parseInt(saveIdParam);
     const {user} = useUserContext();
@@ -140,7 +140,7 @@ export function ToolSavePage<D extends object>({tool, element}: ToolSavePageProp
             if (e.message === INTERRUPTED) {
                 return;
             } else if (e instanceof HTTPError) {
-                showErrorPage(history, e.code);
+                showErrorPage(navigate, e.code);
             } else {
                 throw e;
             }
@@ -160,10 +160,10 @@ export function ToolSavePage<D extends object>({tool, element}: ToolSavePageProp
             setSave(save);
             setLoading(false);
         } else {
-            showErrorPage(history, 404);
+            showErrorPage(navigate, 404);
             return;
         }
-    }, [resourceManager, saveId, history, setShouldShowLockedInfo, tool]);
+    }, [resourceManager, saveId, navigate, setShouldShowLockedInfo, tool]);
 
     const saveController = useMemo((): ToolSaveController<D> => {
         return {
@@ -236,44 +236,41 @@ export function ToolSavePage<D extends object>({tool, element}: ToolSavePageProp
 
 
     return (
-        <Route>
-            <SharedSaveContextComponent permission={getPermissionOfSave()}>
-                <Loader loaded={!isLoading} transparent
-                        alignment={"center"} fullscreen animate={false}>
-                    <UIErrorContextComponent>
-                        {getView()}
-                    </UIErrorContextComponent>
-                    <PromptOnLeave shouldPreventChange={saveDirty}/>
 
-                    <ModalCloseable
-                        show={shouldShowLockedInfo}
-                        backdrop centered
-                        onHide={hideLockedInfoCallback}
-                    >
-                        <Modal.Body>
-                            Dieser Speicherstand wird aktuell bearbeitet, daher können Sie diesen nur
-                            beobachten...
-                        </Modal.Body>
-                        <Modal.Footer>
-                            <Button
-                                variant={"dark"}
-                                onClick={hideLockedInfoCallback}
-                            >
-                                <FAE icon={faCheck}/> Ok
-                            </Button>
-                            <Button
-                                variant={"primary"}
-                                onClick={history.goBack}
-                            >
-                                Zurück
-                            </Button>
-                        </Modal.Footer>
-                    </ModalCloseable>
-                </Loader>
+        <SharedSaveContextComponent permission={getPermissionOfSave()}>
+            <Loader loaded={!isLoading} transparent
+                    alignment={"center"} fullscreen animate={false}>
+                <UIErrorContextComponent>
+                    {getView()}
+                </UIErrorContextComponent>
+                <PromptOnLeave shouldPreventChange={saveDirty}/>
 
-
-            </SharedSaveContextComponent>
-        </Route>
+                <ModalCloseable
+                    show={shouldShowLockedInfo}
+                    backdrop centered
+                    onHide={hideLockedInfoCallback}
+                >
+                    <Modal.Body>
+                        Dieser Speicherstand wird aktuell bearbeitet, daher können Sie diesen nur
+                        beobachten...
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button
+                            variant={"dark"}
+                            onClick={hideLockedInfoCallback}
+                        >
+                            <FAE icon={faCheck}/> Ok
+                        </Button>
+                        <Button
+                            variant={"primary"}
+                            onClick={() => navigate(-1)}
+                        >
+                            Zurück
+                        </Button>
+                    </Modal.Footer>
+                </ModalCloseable>
+            </Loader>
+        </SharedSaveContextComponent>
     );
 
 

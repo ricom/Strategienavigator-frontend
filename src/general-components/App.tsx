@@ -1,7 +1,7 @@
 import {SettingsContextComponent} from "./Contexts/SettingsContextComponent";
 import {DarkModeChanger} from "./Darkmode/Darkmode";
 import React, {useEffect} from "react";
-import {BrowserRouter, Route, Switch} from "react-router-dom";
+import {BrowserRouter, createBrowserRouter, Outlet, RouterProvider} from "react-router-dom";
 import {ProtectedRoute} from "./ProtectedRoute";
 import {Home} from "../components/platform/home/Home";
 import {Imprint} from "../components/platform/imprint/Imprint";
@@ -34,6 +34,110 @@ import {LegacyErrorPageAdapter} from "./LegacyErrorPageAdapter";
 import {Messages} from "./Messages/Messages";
 import {PasswordResetRequest} from "../components/platform/verifications/PasswordResetRequest/PasswordResetRequest";
 import {Tool} from "./Tool/Tool";
+import {ToolData} from "./Tool/Data/ToolData";
+
+const TOOLS: Array<ToolData<any>> = [
+    new PairwiseComparison(),
+    new SWOTAnalysis(),
+    new PersonaAnalysis(),
+    new PortfolioAnalysis(),
+    new UtilityAnalysis()
+];
+
+const ROUTES_ARRAY = [
+    {
+        path: "/",
+        element: <Home/>
+    }, {
+        path: "/legal-notice",
+        element: <Imprint/>
+    },
+    {
+        path: "/data-privacy",
+        element: <DataPrivacy/>
+    },
+    {
+        path: "/about-us",
+        element: <AboutUs/>
+    }, {
+        path: "/verify-email/:token",
+        element: <EmailVerification/>
+    },
+    {
+        path: "/reset-password/:token",
+        element: <PasswordReset/>
+    },
+    {
+        path: "/reset-password",
+        element: <PasswordResetRequest/>
+    }, {
+        path: "/error/:code",
+        element: <ErrorPages/>
+    },
+    {
+        path: "*",
+        element: <ErrorPages/>
+    }, {
+        path: "/login",
+        element: <ProtectedRoute loggedIn={false}> <Login/> </ProtectedRoute>
+    },
+    {
+        path: "/logout",
+        element: <Logout/>
+    },
+    {
+        path: "/register",
+        element: <ProtectedRoute loggedIn={false}> <Register/> </ProtectedRoute>
+    },
+    {
+        path: "/settings",
+        element: <ProtectedRoute loggedIn={true}> <Settings/> </ProtectedRoute>
+    },
+    {
+        path: "/my-profile",
+        element: <ProtectedRoute loggedIn={true} anonymous={false}> <MyProfile/> </ProtectedRoute>
+    },
+    {
+        path: "/invite/:sharedSaveID",
+        element: <ProtectedRoute loggedIn={true}> <ContributionDecision/> </ProtectedRoute>
+    },
+    {
+        path: "/invitation/:token",
+        element: <ProtectedRoute loggedIn={true}> <InvitationDecision/> </ProtectedRoute>
+    },
+]
+/* DEV  */
+if (process.env.NODE_ENV === "development") {
+    TOOLS.push(new TestAnalysis());
+}
+
+TOOLS.forEach(tool => ROUTES_ARRAY.push({
+    path: tool.getLink() + "/*",
+    element: <ProtectedRoute loginAnonymous={true} loggedIn={true}> <Tool tool={tool}/> </ProtectedRoute>
+}));
+
+
+const ROUTE_DATA = createBrowserRouter([{
+    path: "/",
+    element: <BasicLayout/>,
+    children: ROUTES_ARRAY
+}]);
+
+function BasicLayout() {
+    return (<>
+        <LegacyErrorPageAdapter/>
+        <Nav/>
+
+        <div id={"content"}>
+            <Container fluid={false}>
+                <Outlet/>
+            </Container>
+        </div>
+
+        <Footer/>
+        <ControlFooter places={4}/>
+    </>);
+}
 
 
 export function App() {
@@ -48,129 +152,14 @@ export function App() {
         }
     }, []);
 
-    function getRouterSwitch() {
-        return (
-            <Switch>
-                <Route path={"/"} exact><Home/></Route>
-                <Route path={"/legal-notice"} exact><Imprint/></Route>
-                <Route path={"/data-privacy"} exact><DataPrivacy/></Route>
-                <Route path={"/about-us"} exact><AboutUs/></Route>
-                <Route path={"/login"} exact>
-                    <ProtectedRoute loggedIn={false}>
-                        <Login/>
-                    </ProtectedRoute>
-                </Route>
-                <Route path={"/logout"} exact>
-                    <ProtectedRoute loggedIn={undefined}>
-                        <Logout/>
-                    </ProtectedRoute>
-                </Route>
-                <Route path={"/register"} exact>
-                    <ProtectedRoute loggedIn={false}>
-                        <Register/>
-                    </ProtectedRoute>
-                </Route>
-                <Route path={"/settings"} exact>
-                    <ProtectedRoute loggedIn={true}>
-                        <Settings/>
-                    </ProtectedRoute>
-                </Route>
-                <Route path={"/my-profile"} exact>
-                    <ProtectedRoute loggedIn={true} anonymous={false}>
-                        <MyProfile/>
-                    </ProtectedRoute>
-                </Route>
-                <Route path={"/invite/:sharedSaveID"}>
-                    <ProtectedRoute loggedIn={true}>
-                        <ContributionDecision/>
-                    </ProtectedRoute>
-                </Route>
-                <Route path={"/invitation/:token"}>
-                    <ProtectedRoute loggedIn={true}>
-                        <InvitationDecision/>
-                    </ProtectedRoute>
-                </Route>
-
-                <Route path={"/verify-email/:token"}><EmailVerification/></Route>
-                <Route path={"/reset-password/:token"}><PasswordReset/></Route>
-                <Route path={"/reset-password"} exact><PasswordResetRequest/></Route>
-
-                <Route path={"/pairwise-comparison"}>
-                    <ProtectedRoute loginAnonymous={true} loggedIn={true}>
-                        <Tool tool={new PairwiseComparison()}/>
-                    </ProtectedRoute>
-                </Route>
-                <Route path={"/swot-analysis"}>
-                    <ProtectedRoute loginAnonymous={true} loggedIn={true}>
-                        <Tool tool={new SWOTAnalysis()}/>
-                    </ProtectedRoute>
-                </Route>
-                <Route path={"/persona-analysis"}>
-                    <ProtectedRoute loginAnonymous={true} loggedIn={true}>
-                        <Tool tool={new PersonaAnalysis()}/>
-                    </ProtectedRoute>
-                </Route>
-                <Route path={"/portfolio-analysis"}>
-                    <ProtectedRoute loginAnonymous={true} loggedIn={true}>
-                        <Tool tool={new PortfolioAnalysis()}/>
-                    </ProtectedRoute>
-                </Route>
-                <Route path={"/utility-analysis"}>
-                    <ProtectedRoute loginAnonymous={true} loggedIn={true}>
-                        <Tool tool={new UtilityAnalysis()}/>
-                    </ProtectedRoute>
-                </Route>
-
-                {/* DEV  */(process.env.NODE_ENV === "development") && (
-                    <Route path={"/test-analysis"}>
-                        <ProtectedRoute loginAnonymous={true} loggedIn={true}>
-                            <Tool tool={new TestAnalysis()}/>
-                        </ProtectedRoute>
-                    </Route>
-                )}
-
-                <Route path={"/error/:code"}><ErrorPages/></Route>
-                <Route><ErrorPages/></Route>
-
-            </Switch>
-        );
-    }
-
-    function getAppFooter() {
-        return (
-            <>
-                <Footer/>
-                <ControlFooter places={4}/>
-            </>
-        );
-    }
-
-    function getAppContent() {
-        return (
-            <>
-                <Messages xAlignment={"CENTER"} yAlignment={"BOTTOM"} style={{marginBottom: 65}}>
-                    <GlobalContexts key={"global-contexts"}>
-                        <Loader key={"loader"} animate fullscreen loaded={true} variant={"style"}>
-                            <BrowserRouter>
-                                <LegacyErrorPageAdapter/>
-                                <Nav/>
-
-                                <div id={"content"}>
-                                    <Container fluid={false}>
-                                        {getRouterSwitch()}
-                                    </Container>
-                                </div>
-
-                                {getAppFooter()}
-
-                            </BrowserRouter>
-                        </Loader>
-                    </GlobalContexts>
-                </Messages>
-            </>
-        );
-    }
-
-    return getAppContent();
+    return (
+        <Messages xAlignment={"CENTER"} yAlignment={"BOTTOM"} style={{marginBottom: 65}}>
+            <GlobalContexts key={"global-contexts"}>
+                <Loader key={"loader"} animate fullscreen loaded={true} variant={"style"}>
+                    <RouterProvider router={ROUTE_DATA}/>
+                </Loader>
+            </GlobalContexts>
+        </Messages>
+    );
 
 }

@@ -9,9 +9,9 @@ import {checkEmail} from "../../../general-components/API/calls/Email";
 
 import "./register.scss";
 import {Messages, useMessageContext} from "../../../general-components/Messages/Messages";
-import {useHistory} from "react-router";
 import {LoadingButton} from "../../../general-components/LoadingButton/LoadingButton";
 import {CaptchaComponent} from "../../../general-components/Captcha/CaptchaComponent";
+import {useNavigate} from "react-router-dom";
 
 
 export function Register() {
@@ -21,7 +21,7 @@ export function Register() {
 
     // Context
     const {add: showMessage} = useMessageContext();
-    const history = useHistory();
+    const navigate = useNavigate();
 
 
     const register = useCallback(async (e: FormEvent<HTMLFormElement>) => {
@@ -41,11 +41,11 @@ export function Register() {
 
         if (call?.success) {
             showMessage("Konto erstellt!\nÜberprüfe deine Emails!", "SUCCESS", Messages.TIMER);
-            history.push(`/login?email=${email}&bestaetigen`);
+            navigate(`/login?email=${email}&bestaetigen`);
         } else {
             showMessage("Fehlgeschlagen! Überprüfen Sie Ihre Eingaben!", "DANGER", Messages.TIMER);
         }
-    }, [showMessage, setIsRegistering, history]);
+    }, [showMessage, setIsRegistering, navigate]);
 
 
     return (

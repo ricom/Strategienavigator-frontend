@@ -1,5 +1,5 @@
-import {Redirect, useHistory, useLocation} from "react-router";
-import {Link} from "react-router-dom";
+import {useLocation} from "react-router";
+import {Link, Navigate, useNavigate} from "react-router-dom";
 import {Session} from "./Session/Session";
 import {Button, Modal} from "react-bootstrap";
 import {ReactNode, useState} from "react";
@@ -11,7 +11,7 @@ import {useUserContext} from "./Contexts/UserContextComponent";
 
 
 interface ProtectedRouteProps {
-    loggedIn?: boolean | undefined
+    loggedIn: boolean
     anonymous?: boolean | undefined
     loginAnonymous?: boolean | undefined
     children?: ReactNode
@@ -109,7 +109,7 @@ export function AnonymousModal(props: {
 }
 
 function ProtectedRoute({loginAnonymous, anonymous, loggedIn, children}: ProtectedRouteProps) {
-    let history = useHistory();
+    let navigate = useNavigate();
     let location = useLocation();
     const {user, isLoggedIn} = useUserContext();
 
@@ -118,7 +118,7 @@ function ProtectedRoute({loginAnonymous, anonymous, loggedIn, children}: Protect
             if (anonymous !== undefined) {
                 if (anonymous !== user?.isAnonymous()) {
                     return (
-                        <Redirect to={"/"}/>
+                        <Navigate to={"/"}/>
                     );
                 }
             }
@@ -131,7 +131,7 @@ function ProtectedRoute({loginAnonymous, anonymous, loggedIn, children}: Protect
                     }
                 }
                 const redirectUser = async () => {
-                    history.push("/");
+                    navigate("/");
                 }
 
                 return (
@@ -139,11 +139,11 @@ function ProtectedRoute({loginAnonymous, anonymous, loggedIn, children}: Protect
                 );
             }
             return (
-                <Redirect to={"/login?origin=" + location.pathname + location.search}/>
+                <Navigate to={"/login?origin=" + location.pathname + location.search} replace={true}/>
             );
         } else {
             return (
-                <Redirect to={"/"}/>
+                <Navigate to={"/"}/>
             );
         }
     }

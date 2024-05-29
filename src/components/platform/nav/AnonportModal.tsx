@@ -12,10 +12,10 @@ import {extractFromForm} from "../../../general-components/Utility/FormHelper";
 import {isEmpty} from "../../../general-components/ComponentUtils";
 import {LoadingButton} from "../../../general-components/LoadingButton/LoadingButton";
 import {portUser} from "../../../general-components/API/calls/User";
-import {useHistory} from "react-router";
 import {useMessageContext} from "../../../general-components/Messages/Messages";
 import {CaptchaComponent} from "../../../general-components/Captcha/CaptchaComponent";
 import {useUserContext} from "../../../general-components/Contexts/UserContextComponent";
+import {useNavigate} from "react-router-dom";
 
 
 export interface AnonportModalProps {
@@ -39,7 +39,7 @@ export function AnonportModal({onClose, show}: AnonportModalProps) {
 
     const {add: showMessage} = useMessageContext();
     const {user} = useUserContext();
-    const history = useHistory();
+    const navigate = useNavigate();
 
     // Refs
 
@@ -99,7 +99,7 @@ export function AnonportModal({onClose, show}: AnonportModalProps) {
                         ), "SUCCESS", 8000);
 
                         onClose();
-                        history.push(`/login?email=${email}&bestaetigen`);
+                        navigate(`/login?email=${email}&bestaetigen`);
                     } else {
                         setSuccess(false);
                     }
@@ -112,7 +112,7 @@ export function AnonportModal({onClose, show}: AnonportModalProps) {
 
             setIsPorting(false);
         }
-    }, [history, onClose, user, passwordField, uniqueUsername, uniqueEmail, showMessage, setIsPorting, setErrors, setSuccess]);
+    }, [navigate, onClose, user, passwordField, uniqueUsername, uniqueEmail, showMessage, setIsPorting, setErrors, setSuccess]);
 
     const resetError = useCallback(() => {
         setErrors({});

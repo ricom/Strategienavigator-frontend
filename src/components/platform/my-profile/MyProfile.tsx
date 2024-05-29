@@ -6,7 +6,6 @@ import {Button, Form} from "react-bootstrap";
 import {extractFromForm} from "../../../general-components/Utility/FormHelper";
 import {PasswordField} from "../../../general-components/PasswordField/PasswordField";
 import {deleteUser, UpdateData, updateUser} from "../../../general-components/API/calls/User";
-import {useHistory} from "react-router";
 import {Messages, useMessageContext} from "../../../general-components/Messages/Messages";
 import {checkEmail} from "../../../general-components/API/calls/Email";
 import {checkUsername} from "../../../general-components/API/calls/Username";
@@ -21,6 +20,7 @@ import {ButtonPanel} from "../../../general-components/ButtonPanel/ButtonPanel";
 import {useBooleanState} from "../../../general-components/Utility/Hooks";
 import {UserStatistics} from "../../../general-components/UserStatistics/UserStatistics";
 import {ConfirmDeletionModal} from "./ConfirmDeletionModal";
+import {useNavigate} from "react-router-dom";
 
 
 export function MyProfile() {
@@ -38,7 +38,7 @@ export function MyProfile() {
 
 
     const messageContext = useMessageContext();
-    const history = useHistory();
+    const navigate = useNavigate();
 
 
     const deleteCallback = useCallback(async () => {
@@ -51,9 +51,9 @@ export function MyProfile() {
         Session.setCurrent(null);
         Session.removeTokens();
 
-        history.push("/");
+        navigate("/");
         messageContext.add("Ihr Konto wurde gelöscht!", "SUCCESS", 7000);
-    }, [history, messageContext, user]);
+    }, [navigate, messageContext, user]);
 
 
     const saveChanges = useCallback(async (e: FormEvent<HTMLFormElement>) => {

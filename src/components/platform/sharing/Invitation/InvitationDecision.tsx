@@ -1,5 +1,5 @@
 import {useCallback, useEffect, useState} from "react";
-import {useHistory, useParams} from "react-router";
+import {useParams} from "react-router";
 
 
 import "./invitation-decision.scss";
@@ -9,6 +9,7 @@ import {Loader} from "../../../../general-components/Loader/Loader";
 import {LoadingButton} from "../../../../general-components/LoadingButton/LoadingButton";
 import {useMessageContext} from "../../../../general-components/Messages/Messages";
 import {getSaveURL, getSharedSavePermissionText} from "../../../../general-components/Save";
+import {useNavigate} from "react-router-dom";
 
 
 export interface InvitationDecisionState {
@@ -25,7 +26,7 @@ export function InvitationDecision() {
     // Context
     const {token} = useParams() as { token: string };
     const {add: showMessage} = useMessageContext();
-    const history = useHistory();
+    const navigate = useNavigate();
 
     // Effect
 
@@ -40,7 +41,7 @@ export function InvitationDecision() {
                     return;
                 }
                 if (!invitation?.success) {
-                    history.push("/");
+                    navigate("/");
                 } else {
                     setLink(invitation.callData.data);
                 }
@@ -56,7 +57,7 @@ export function InvitationDecision() {
         return () => {
             canceled = true;
         }
-    }, [setLink, history, token]);
+    }, [setLink, navigate, token]);
 
     const acceptInvitation = useCallback(async () => {
         setIsSaving(true);
@@ -64,11 +65,11 @@ export function InvitationDecision() {
 
         if (response?.success) {
             showMessage("Einladung angenommen!", "SUCCESS", 5000);
-            history.push(getSaveURL(link?.save.id as number, link?.save.tool.id as number));
+            navigate(getSaveURL(link?.save.id as number, link?.save.tool.id as number));
         }else{
             setIsSaving(false);
         }
-    }, [showMessage, history, token, link?.save.id, link?.save.tool.id]);
+    }, [showMessage, navigate, token, link?.save.id, link?.save.tool.id]);
 
     return (
         <Loader

@@ -1,11 +1,10 @@
 import React, {useCallback, useState} from "react";
-import {useHistory} from "react-router";
 import {ToolHome} from "./Home/ToolHome";
 import "./tool.scss";
 import {createSave} from "../API/calls/Saves";
 import {ToolData} from "./Data/ToolData";
 import {Card} from "react-bootstrap";
-import {Route, Switch} from "react-router-dom";
+import {Route, Routes, useNavigate} from "react-router-dom";
 import {CreateToolModal} from "./CreateToolModal/CreateToolModal";
 import {ToolSavePage} from "./ToolSavePage/ToolSavePage";
 
@@ -17,7 +16,7 @@ function Tool({tool}: ToolProps) {
 
     const [isCreatingNewSave, setIsCreatingNewSave] = useState(false);
 
-    const history = useHistory();
+    const navigate = useNavigate();
 
     /**
      * Kreiert einen neuen Save
@@ -39,13 +38,13 @@ function Tool({tool}: ToolProps) {
 
         if (saved) {
             setIsCreatingNewSave(false)
-            history.push(tool.getLink() + "/" + saved.callData.id);
+            navigate(tool.getLink() + "/" + saved.callData.id);
         }
-    }, [history, tool]);
+    }, [navigate, tool]);
 
     const onCreateCancel = useCallback(() => {
-        history.push(tool.getLink());
-    }, [history, tool]);
+        navigate(tool.getLink());
+    }, [navigate, tool]);
 
 
     if (tool.maintenance) {
@@ -59,24 +58,17 @@ function Tool({tool}: ToolProps) {
 
     return (
         <>
-            <Switch>
-                <Route exact path={tool.getLink() + "/"}>
-                    <ToolHome tool={tool}/>
-                </Route>
+            <Routes>
+                <Route path={"/"} element={<ToolHome tool={tool}/>}/>
 
-                <Route exact path={tool.getLink() + "/new"}>
-                    <CreateToolModal onSaveCreated={createNewSave}
-                                     onCancel={onCreateCancel}
-                                     isCreatingNewSave={isCreatingNewSave}/>
-                </Route>
+                <Route path={"/new"} element={<CreateToolModal onSaveCreated={createNewSave}
+                                                               onCancel={onCreateCancel}
+                                                               isCreatingNewSave={isCreatingNewSave}/>}/>
 
                 <Route
-                    exact
-                    path={tool.getLink() + "/:id"}>
-                    <ToolSavePage tool={tool} element={tool.buildSaveBuilder}/>
-                </Route>
+                    path={"/:id"} element={<ToolSavePage tool={tool} element={tool.buildSaveBuilder}/>}/>
 
-            </Switch>
+            </Routes>
         </>
     );
 }
