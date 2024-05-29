@@ -27,7 +27,7 @@ export function DataPrivacy() {
                 Unser/e Verantwortliche/r
                 (nachfolgend
                 „Verantwortlicher“) i.S.d. Art. 4 Zif. 7 DS-GVO ist Prof. Christian Gündling und Rico Meiner
-                (Kontaktdaten siehe <Link to={"legal-notice"}>Impressum</Link>).<br/> <br/>
+                (Kontaktdaten siehe <Link to={"/legal-notice"}>Impressum</Link>).<br/> <br/>
                 <strong>Datenarten,
                     Zwecke der Verarbeitung und Kategorien betroffener Personen</strong>
             </p>

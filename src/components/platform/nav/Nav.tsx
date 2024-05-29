@@ -155,7 +155,7 @@ export function Nav() {
         <>
             <Navbar onToggle={toggleExpanded} expanded={expanded} expand="lg">
                 <Container>
-                    <Navbar.Brand onClick={shrinkCallback} as={NavLink} to={"/"} exact className={"nav-link"}>
+                    <Navbar.Brand onClick={shrinkCallback} as={NavLink} to={"/"} end className={"nav-link"}>
 
                         <FAE icon={faHome}/>&nbsp;
                         {process.env.REACT_APP_NAME}
@@ -207,9 +207,6 @@ export function Nav() {
                                                         <Card as={NavLink}
                                                               title={(value.description !== null) ? "Beschreibung: " + value.description : ""}
                                                               to={link}
-                                                              onMouseDown={() => {
-                                                                  history.push(link); // TODO: Wenn man bereits auf einem Save ist, wird nicht der Push registriert, evtl. reload einbauen
-                                                              }}
                                                               key={"SAVE" + value.id}
                                                               body
                                                               className={"result"}>

@@ -43,6 +43,9 @@ export interface ToolItem extends ControlFooterItem {
     tool: {
         icon: IconDefinition
         title: string
+        /**
+         * Must be an absolute link.
+         */
         link: string
     }
 }
@@ -79,7 +82,7 @@ function getItem(item: ControlFooterItemType | undefined): null | ReactNode {
     }
     if ("home" in item) {
         return (
-            <NavLink key={"home"} to={"/"} exact>
+            <NavLink key={"home"} to={"/"} end>
                 <FAE icon={faHome}/> Startseite
             </NavLink>
         );
@@ -114,14 +117,14 @@ function getItem(item: ControlFooterItemType | undefined): null | ReactNode {
     }
     if ("tool" in item) {
         return (
-            <NavLink key={"tool"} to={item.tool?.link} exact>
+            <NavLink key={"tool"} to={item.tool?.link} end>
                 <FAE icon={item.tool?.icon}/> {item.tool?.title}
             </NavLink>
         );
     }
     if ("settings" in item) {
         return (
-            <NavLink key={"settings"} to={"/settings"} exact>
+            <NavLink key={"settings"} to={"/settings"} end>
                 <FAE icon={faCogs}/> Einstellungen
             </NavLink>
         );

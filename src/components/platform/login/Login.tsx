@@ -2,7 +2,7 @@ import {FormEvent, useCallback, useMemo, useState} from "react";
 import {Form} from "react-bootstrap";
 import {Session} from "../../../general-components/Session/Session";
 import {extractFromForm} from "../../../general-components/Utility/FormHelper";
-import {useHistory, useLocation} from "react-router";
+import {useLocation} from "react-router";
 import {PasswordField} from "../../../general-components/PasswordField/PasswordField";
 import {Messages, useMessageContext} from "../../../general-components/Messages/Messages";
 import {Link} from "react-router-dom";
