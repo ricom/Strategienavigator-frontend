@@ -124,6 +124,8 @@ export type SimpleSaveResource = {
     resources: SaveResourceResource[]
 }
 
+export type SimpleSaveResourceLastOpened = SimpleSaveResource & {last_opened_by_user: string}
+
 /**
  * Eine Einladung zu einem Speicherstand
  */

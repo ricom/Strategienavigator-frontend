@@ -1,5 +1,11 @@
 import {APIArgs, callAPI} from "../API";
-import {ImportJSONData, PaginationResource, SaveResource, SimpleSaveResource} from "../../Datastructures";
+import {
+    ImportJSONData,
+    PaginationResource,
+    SaveResource,
+    SimpleSaveResource,
+    SimpleSaveResourceLastOpened
+} from "../../Datastructures";
 import {Patch} from "immer";
 import {ResourcesType} from "../../Tool/ToolSavePage/ToolSavePage";
 
@@ -91,13 +97,14 @@ const getSave = async <D extends unknown>(saveID: number, apiArgs?: APIArgs) => 
 }
 
 /**
- * Holt sich die 5 zuletzt geöffneten Speicherstände
+ * Holt sich die 4 zuletzt geöffneten Speicherstände
  *
+ * @param userID id of the user
  * @param {APIArgs} apiArgs
  * @returns {Promise<CallInterface<object> | null>}
  */
-const getLastOpenedSaves = async (apiArgs?: APIArgs) => {
-    return await callAPI<{ data: SimpleSaveResource[] }>("api/saves/index/last", "GET", undefined, true, apiArgs);
+const getLastOpenedSaves = async (userID: number, apiArgs?: APIArgs) => {
+    return await callAPI<{ data: SimpleSaveResourceLastOpened[] }>("api/users/" + userID +"/saves/last", "GET", undefined, true, apiArgs);
 }
 
 /**
