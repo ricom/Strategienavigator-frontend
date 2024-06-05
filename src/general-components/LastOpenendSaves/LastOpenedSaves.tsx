@@ -7,7 +7,8 @@ import FAE from "../Icons/FAE";
 import {Loader} from "../Loader/Loader";
 import React, {useCallback, useMemo, useState} from "react";
 import {getLastOpenedSaves} from "../API/calls/Saves";
-import {SimpleSaveResource} from "../Datastructures";
+import {SimpleSaveResourceLastOpened} from "../Datastructures";
+import {useUserContext} from "../Contexts/UserContextComponent";
 
 function getTimeString(time: Date) {
     return `${time.toLocaleDateString()}, ${time.toLocaleTimeString().split(":").slice(0, 2).join(":")} Uhr`
@@ -16,14 +17,18 @@ function getTimeString(time: Date) {
 export function LastOpenedSaves() {
 
 
-    const [lastOpenedSaves, setLastOpenedSaves] = useState<SimpleSaveResource[] | undefined>(undefined);
+    const [lastOpenedSaves, setLastOpenedSaves] = useState<SimpleSaveResourceLastOpened[] | undefined>(undefined);
     const [hasError, setHasError] = useState(false);
+    const {user} = useUserContext();
 
     const loadLastOpenedSaves = useCallback(async () => {
+        if (!user) {
+            return;
+        }
         let didCancel = false;
         let result;
         try {
-            result = await getLastOpenedSaves({
+            result = await getLastOpenedSaves(user.getID(), {
                 errorCallback: () => {
                     setHasError(true);
                 }
@@ -51,7 +56,7 @@ export function LastOpenedSaves() {
         }
 
 
-    }, [setLastOpenedSaves, setHasError]);
+    }, [setLastOpenedSaves, setHasError, user]);
 
 
     const payload = useMemo(() => [loadLastOpenedSaves], [loadLastOpenedSaves]);
@@ -70,7 +75,7 @@ export function LastOpenedSaves() {
                 )}
                 {(!hasError && lastOpenedSaves !== undefined && lastOpenedSaves?.map((save, index) => {
                     let tool = Tools.find((v) => v.id === save.tool_id);
-                    let lastOpened = new Date(save.last_opened);
+                    let lastOpened = new Date(save.last_opened_by_user);
                     let timeString = getTimeString(lastOpened);
 
                     if (tool === undefined)
