@@ -1,7 +1,7 @@
 import {SettingsContextComponent} from "./Contexts/SettingsContextComponent";
 import {DarkModeChanger} from "./Darkmode/Darkmode";
 import React, {useEffect} from "react";
-import {BrowserRouter, createBrowserRouter, Outlet, RouterProvider} from "react-router-dom";
+import {createBrowserRouter, Outlet, RouterProvider} from "react-router-dom";
 import {ProtectedRoute} from "./ProtectedRoute";
 import {Home} from "../components/platform/home/Home";
 import {Imprint} from "../components/platform/imprint/Imprint";
