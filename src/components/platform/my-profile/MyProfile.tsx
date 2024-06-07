@@ -18,14 +18,16 @@ import {LoadingButton} from "../../../general-components/LoadingButton/LoadingBu
 import FAE from "../../../general-components/Icons/FAE";
 import {useUserContext} from "../../../general-components/Contexts/UserContextComponent";
 import {ButtonPanel} from "../../../general-components/ButtonPanel/ButtonPanel";
-import {useBooleanState} from "../../../general-components/Utility/Hooks";
+import {useBooleanState, useControlledInput} from "../../../general-components/Utility/Hooks";
 import {UserStatistics} from "../../../general-components/UserStatistics/UserStatistics";
 import {ConfirmDeletionModal} from "./ConfirmDeletionModal";
 
 
 export function MyProfile() {
 
-    const {state: edit, toggle: toggleEdit} = useBooleanState(false);
+    const {user, isLoggedIn} = useUserContext();
+
+    const {state: edit, toggle: toggleEditValue} = useBooleanState(false);
     const {
         state: showDeleteModal,
         setTrue: showDeleteModalCallback,
@@ -34,11 +36,25 @@ export function MyProfile() {
     const [isSaving, setIsSaving] = useState(false);
     const [isSaved, setIsSaved] = useState(false);
 
-    const {user, isLoggedIn} = useUserContext();
+
+    const [usernameValue,
+        , // is important
+        onUsernameChanged,
+        resetUsername] = useControlledInput(user?.getUsername() ?? "");
+    const [emailValue,
+        , // is important
+        onEmailChanged,
+        resetEmail] = useControlledInput(user?.getEmail() ?? "");
 
 
     const messageContext = useMessageContext();
     const history = useHistory();
+
+    const toggleEdit = useCallback(function () {
+        resetUsername();
+        resetEmail();
+        toggleEditValue();
+    }, [resetUsername, resetEmail, toggleEditValue]);
 
 
     const deleteCallback = useCallback(async () => {
@@ -110,7 +126,7 @@ export function MyProfile() {
 
     if (!isLoggedIn || !user) {
         return (
-            <Loader payload={[]} loaded={false} transparent fullscreen/>
+            <Loader loaded={false} transparent fullscreen/>
         );
     }
 
@@ -135,9 +151,9 @@ export function MyProfile() {
                     type={"text"}
                     readOnly={!edit}
                     suppressErrors={!edit}
-                    defaultValue={user?.getUsername()}
-                    value={edit ? undefined : user.getUsername()}
+                    value={usernameValue}
                     callback={checkUsername}
+                    onChange={onUsernameChanged}
                     entityName={"Username"}
                 />
                 <Form.Label>Benutzername</Form.Label>
@@ -150,9 +166,9 @@ export function MyProfile() {
                     type={"text"}
                     readOnly={!edit}
                     suppressErrors={!edit}
-                    defaultValue={user.getEmail()}
-                    value={edit ? undefined : user.getEmail()}
+                    value={emailValue}
                     callback={checkEmail}
+                    onChange={onEmailChanged}
                     entityName={"Email"}
                 />
                 <Form.Label>E-Mail-Adresse</Form.Label>

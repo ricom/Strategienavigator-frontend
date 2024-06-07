@@ -30,7 +30,13 @@ export interface UniqueCheckProps {
      * Wird aufgerufen wenn der Wert sich ändert
      * @param {string} value Der Wert
      */
-    onChangedValue?: (value: string) => void
+    onChangedValue?: (value: string) => void,
+    /**
+     * Wird aufgerufen wenn der Wert sich ändert
+     * @param {React.ChangeEvent} event welches das input field ändert.
+     */
+    onChange?: (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void
+
 }
 
 export interface UniqueCheckState {
@@ -107,14 +113,24 @@ export class UniqueCheck extends Component<ReplaceProps<"input", FormControlProp
     }
 
     render = () => {
-        let {callback, entityName, suppressErrors, ...propsForInput} = this.props;
+        let {
+            callback,
+            entityName,
+            suppressErrors,
+            onChangedValue,
+            onChange,
+            ...propsForInput
+        } = this.props;
 
         return (
             <>
                 <Form.Control
                     onChange={async (e) => {
-                        if (this.props.onChangedValue) {
-                            this.props.onChangedValue(e.target.value);
+                        if (onChangedValue) {
+                            onChangedValue(e.target.value);
+                        }
+                        if (onChange) {
+                            onChange(e);
                         }
                         await this.changed(e)
                     }}
@@ -123,7 +139,7 @@ export class UniqueCheck extends Component<ReplaceProps<"input", FormControlProp
                 <div className={"uniqueOutput feedbackContainer"}>
                     {this.state.isLoading && (
                         <div className={"feedback"}>
-                            <Loader payload={[]} size={30} alignment={"left"} text={"Lädt..."} transparent
+                            <Loader size={30} alignment={"left"} text={"Lädt..."} transparent
                                     loaded={false}/>
                         </div>
                     )}

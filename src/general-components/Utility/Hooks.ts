@@ -1,4 +1,5 @@
 import {useCallback, useState} from "react";
+import * as React from "react";
 
 /**
  * Hook um ein Boolean State zu erstellen. Erstellt häufig genutzte callbacks.
@@ -42,6 +43,20 @@ export function useBooleanState(initialState: boolean) {
         /**
          * Eine Funktion die den aktuellen State invertiert.
          */
-        toggle};
+        toggle
+    };
 
+}
+
+
+export function useControlledInput(defaultValue: string): [string, React.Dispatch<React.SetStateAction<string>>, (event: React.ChangeEvent<any>) => void, () => void] {
+    const [value, setValue] = React.useState(defaultValue);
+    const onChangedInput = useCallback(function (event: React.ChangeEvent<any>) {
+        event.preventDefault();
+        setValue(event.target.value);
+    }, [setValue]);
+    const reset = useCallback(function () {
+        setValue(defaultValue);
+    }, [setValue, defaultValue]);
+    return [value, setValue, onChangedInput, reset];
 }
